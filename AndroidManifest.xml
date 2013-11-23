@@ -28,6 +28,7 @@
         </activity>
         <activity android:name=".activity.CastActivity" android:screenOrientation="sensorLandscape" android:hardwareAccelerated="true">
         </activity>
+        <activity android:name=".activity.UPnPActivity"></activity>
         <activity android:name=".activity.AboutActivity"></activity>
         <activity android:name=".activity.DonateActivity"></activity>
         <receiver android:name=".receiver.OnBootBroadcastReceiver">
@@ -44,6 +45,7 @@
             </intent-filter>
         </receiver>
         <service android:name=".service.CheapCastService" android:process=":server" android:exported="true"/>
+        <service android:name="org.droidupnp.model.cling.UpnpService" />
     </application>
 
 </manifest>

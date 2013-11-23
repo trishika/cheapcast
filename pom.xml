@@ -12,6 +12,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<platform.version>4.1.1.4</platform.version>
 		<android.plugin.version>3.6.0</android.plugin.version>
+
+		<cling.version>2.0-alpha2</cling.version>
+		<jetty.version>8.1.8.v20121106</jetty.version>
+		<slf4j.version>1.6.1</slf4j.version>
 	</properties>
 
 	<dependencies>
@@ -56,12 +60,32 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-websocket</artifactId>
-            <version>8.1.12.v20130726</version>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>8.1.12.v20130726</version>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.fourthline.cling</groupId>
+            <artifactId>cling-core</artifactId>
+            <version>${cling.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.fourthline.cling</groupId>
+            <artifactId>cling-support</artifactId>
+            <version>${cling.version}</version>
         </dependency>
     </dependencies>
 	<build>

@@ -34,6 +34,9 @@ import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+import org.droidupnp.controller.upnp.IUpnpServiceController;
+import org.droidupnp.model.upnp.IFactory;
+
 /**
  * Created with IntelliJ IDEA.
  * User: maui
@@ -47,6 +50,9 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
     private Intent mServiceIntent;
     private boolean mConnected = false;
     private SharedPreferences mPreferences;
+
+    public static IFactory factory = null;
+    public static IUpnpServiceController upnpServiceController = null;
 
     private ServiceConnection mConnection = new ServiceConnection() {
         // Called when the connection with the service is established
@@ -83,6 +89,13 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
         addPreferencesFromResource(R.xml.settings);
         mServiceIntent = new Intent(PreferenceActivity.this, CheapCastService.class);
 
+         // Use cling factory
+        if (factory == null)
+            factory = new org.droidupnp.controller.cling.Factory();
+
+        // Upnp service
+        if (upnpServiceController == null)
+            upnpServiceController = factory.createUpnpServiceController(this);
     }
 
     @Override

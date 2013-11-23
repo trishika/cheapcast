@@ -37,4 +37,16 @@
     <string name="start_service">Start Service</string>
     <string name="custom_services">Custom Services</string>
     <string name="custom_services_summary">DEV Only. Allow registration of custom apps with CheapCast</string>
+
+    <!-- UPnP device attributes -->
+    <string name="manufacturer">Manufacturer</string>
+    <string name="manufacturer_url">Manufacturer URL</string>
+    <string name="model_name">Model name</string>
+    <string name="model_url">Model URL</string>
+    <string name="model_number">Model number</string>
+    <string name="model_desc">Model description</string>
+    <string name="presention_url">Presentation URL</string>
+    <string name="desc_xml">Description XML</string>
+    <string name="udn">UDN</string>
+    <string name="separator"> : </string>
 </resources>
