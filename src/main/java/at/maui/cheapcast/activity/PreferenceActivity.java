@@ -94,7 +94,6 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
     protected void onResume() {
         super.onStart();
         bindService(mServiceIntent, mConnection, 0);
-        App.getInstance().getTracker().sendView("/Preferences");
     }
 
     @Override
@@ -115,9 +114,6 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
             Intent donateIntent = new Intent(PreferenceActivity.this, DonateActivity.class);
             startActivity(donateIntent);
             return true;
-        } else if(preference.getKey().equals("analytics")) {
-            CheckBoxPreference cb = (CheckBoxPreference) preference;
-            App.getInstance().getGoogleAnalytics().setAppOptOut(cb.isChecked());
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);    //To change body of overridden methods use File | Settings | File Templates.

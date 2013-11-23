@@ -205,7 +205,6 @@ public class CastActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        App.getInstance().getTracker().sendView("/Cast/"+getIntent().getStringExtra(Const.APP_EXTRA));
     }
 
     @Override

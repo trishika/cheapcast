@@ -46,6 +46,5 @@ public class DonateActivity extends RoboSherlockFragmentActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        App.getInstance().getTracker().sendView("/Donate");
     }
 }

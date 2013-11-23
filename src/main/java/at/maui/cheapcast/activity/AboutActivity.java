@@ -82,13 +82,11 @@ public class AboutActivity extends RoboSherlockFragmentActivity{
 
     private void trackViewPagerPage(int position) {
         Log.d(LOG_TAG, "trackViewPagerPage()");
-        App.getInstance().getTracker().sendView(String.format("/About/%s", getResources().getStringArray(R.array.about_tabs)[position]));
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        App.getInstance().getTracker().sendView("/About");
     }
 
     @Override

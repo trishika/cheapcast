@@ -20,7 +20,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,7 +28,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import at.maui.cheapcast.Const;
@@ -41,10 +39,6 @@ import at.maui.cheapcast.activity.PreferenceActivity;
 import at.maui.cheapcast.chromecast.*;
 import at.maui.cheapcast.chromecast.model.AppRegistration;
 import at.maui.cheapcast.ssdp.SSDP;
-import com.google.analytics.tracking.android.ExceptionReporter;
-import com.google.analytics.tracking.android.GAServiceManager;
-import com.google.analytics.tracking.android.GoogleAnalytics;
-import com.google.analytics.tracking.android.Tracker;
 import com.google.gson.Gson;
 import org.eclipse.jetty.server.AbstractHttpConnection;
 import org.eclipse.jetty.server.Handler;
@@ -75,8 +69,6 @@ public class CheapCastService extends Service {
 
     private Gson mGson;
     private SharedPreferences mPreferences;
-    private Tracker mGaTracker;
-    private GoogleAnalytics mGoogleAnalytics;
     private boolean mRunning = false;
     private ICheapCastCallback mCallback;
     private App mLastApp;
@@ -113,18 +105,6 @@ public class CheapCastService extends Service {
         }
         Log.d(LOG_TAG, String.format("Starting up: friendlyName: %s", mPreferences.getString("friendly_name","CheapCasto")));
         mGson = new Gson();
-
-        mGoogleAnalytics = GoogleAnalytics.getInstance(this);
-        mGaTracker = mGoogleAnalytics.getTracker(getString(R.string.ga_trackingId));
-        mGoogleAnalytics.setAppOptOut(mPreferences.getBoolean("analytics", false));
-
-        Thread.UncaughtExceptionHandler myHandler = new ExceptionReporter(
-                mGaTracker,                                        // Currently used Tracker.
-                GAServiceManager.getInstance(),                   // GAServiceManager singleton.
-                Thread.getDefaultUncaughtExceptionHandler(), this);     // Current default uncaught exception handler.
-
-
-        mGaTracker.sendEvent("CheapCastService","ServiceStart", null,null);
 
         mRegisteredApps = new HashMap<String, App>();
         registerApp(new App("ChromeCast", "https://www.gstatic.com/cv/receiver.html?$query"));
@@ -244,8 +224,6 @@ public class CheapCastService extends Service {
     public void onDestroy() {
         Log.d(LOG_TAG, "onDestroy()");
 
-        mGaTracker.sendEvent("CheapCastService","ServiceStop", null,null);
-
         mSsdp.shutdown();
 
         try {
@@ -335,8 +313,6 @@ public class CheapCastService extends Service {
                 if(app != null) {
                     app.stop();
 
-                    mGaTracker.sendEvent("CheapCastService","AppStop", appName, null);
-
                     if(mCallback != null && app.getReceivers().size() == 0)
                         try {
                             mCallback.onAppStopped(appName);
@@ -356,7 +332,6 @@ public class CheapCastService extends Service {
                 if(app != null) {
 
                    // if(mLastApp == null || !mLastApp.equals(app) || !app.getState().equals("running")) {
-                        mGaTracker.sendEvent("CheapCastService","AppStart", appName, null);
                         app.setLink("<link rel='run' href='web-1'/>");
                         app.setConnectionSvcURL(String.format("http://%s:8008/connection/%s", server, appName));
                         app.addProtocol("ramp");
@@ -412,7 +387,6 @@ public class CheapCastService extends Service {
                     AppRegistration reg = mGson.fromJson(rawBody, AppRegistration.class);
 
                     if(reg != null) {
-                        mGaTracker.sendEvent("CheapCastService","RegisterApp", reg.getAppName(),null);
                         registerApp(new App(reg.getAppName(), reg.getAppUrl(), reg.getProtocols()));
                         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
                         httpServletResponse.setContentType("application/json; charset=utf-8");
