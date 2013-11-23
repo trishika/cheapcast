@@ -106,13 +106,18 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
 
+        Intent intent = null;
+
         if(preference.getKey().equals("about")) {
-            Intent aboutIntent = new Intent(PreferenceActivity.this, AboutActivity.class);
-            startActivity(aboutIntent);
-            return true;
+            intent = new Intent(PreferenceActivity.this, AboutActivity.class);
         } else if(preference.getKey().equals("donate")) {
-            Intent donateIntent = new Intent(PreferenceActivity.this, DonateActivity.class);
-            startActivity(donateIntent);
+            intent = new Intent(PreferenceActivity.this, DonateActivity.class);
+        } else if(preference.getKey().equals("upnp")) {
+            intent = new Intent(PreferenceActivity.this, UPnPActivity.class);
+        }
+
+        if(intent != null) {
+            startActivity(intent);
             return true;
         }
 
