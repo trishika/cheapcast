@@ -40,6 +40,13 @@ import at.maui.cheapcast.chromecast.*;
 import at.maui.cheapcast.chromecast.model.AppRegistration;
 import at.maui.cheapcast.ssdp.SSDP;
 import com.google.gson.Gson;
+
+import org.droidupnp.controller.cling.ServiceController;
+import org.droidupnp.controller.upnp.IUpnpServiceController;
+import org.droidupnp.model.upnp.IDeviceDiscoveryObserver;
+import org.droidupnp.model.upnp.IRegistryListener;
+import org.droidupnp.model.upnp.IUpnpDevice;
+import org.droidupnp.model.upnp.RendererDiscovery;
 import org.eclipse.jetty.server.AbstractHttpConnection;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
@@ -52,9 +59,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.NetworkInterface;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public class CheapCastService extends Service {
+public class CheapCastService extends Service implements IDeviceDiscoveryObserver {
 
     public static final String LOG_TAG = "CheapCastService";
     private NotificationManager mNotificationManager;
@@ -65,7 +73,10 @@ public class CheapCastService extends Service {
     private WifiManager.MulticastLock mMulticastLock;
 
     private SSDP mSsdp;
-    private Server mServer;
+    private ArrayList<Server> mServer;
+    private ArrayList<IUpnpDevice> mUpnpDevices;
+    public static final int START_PORT = 8008;
+    private IUpnpServiceController mServiceController;
 
     private Gson mGson;
     private SharedPreferences mPreferences;
@@ -116,6 +127,9 @@ public class CheapCastService extends Service {
         registerApp(new App("GoogleCastPlayer", "https://www.gstatic.com/eureka/html/gcp.html"));
         registerApp(new App("Fling", "$query"));
         registerApp(new App("TicTacToe", "http://www.gstatic.com/eureka/sample/tictactoe/tictactoe.html", new String[]{"com.google.chromecast.demo.tictactoe"}));
+
+        mServer = new ArrayList<Server>();
+        mUpnpDevices = new ArrayList<IUpnpDevice>();
     }
 
     private void registerApp(App app) {
@@ -184,10 +198,21 @@ public class CheapCastService extends Service {
         if(!mRunning)
             initService();
 
+        mServiceController = new ServiceController(this);
+        mServiceController.resume();
+        RendererDiscovery rendererDiscovery = new RendererDiscovery(mServiceController.getServiceListener());
+        rendererDiscovery.addObserver(this);
+        rendererDiscovery.resume();
+        //mServiceController.getServiceListener().addListener(this);
+
         return START_STICKY;
     }
 
-    private void initService() {
+    private synchronized void createServer(String name){
+
+        int port = START_PORT + mServer.size();
+
+        Log.d(LOG_TAG, String.format("Creating server %s on port %d", name, port));
 
         if(mWifiManager != null){
             mMulticastLock = mWifiManager.createMulticastLock("SSDP");
@@ -195,28 +220,34 @@ public class CheapCastService extends Service {
         }
 
         try {
-            mServer = new Server(8008);
-            mServer.setSendDateHeader(true);
-            mServer.setSendServerVersion(false);
+            Server server = new Server(port);
+            server.setSendDateHeader(true);
+            server.setSendServerVersion(false);
 
-            mServer.setHandler(mWsHandler);
-            mWsHandler.setHandler(mHttpHandler);
-            mServer.start();
+            CustomWebSocketHandler wsHandler = new CustomWebSocketHandler();
+            server.setHandler(wsHandler);
+            CastRESTHandler castRESTHandler = new CastRESTHandler(name, port);
+            wsHandler.setHandler(castRESTHandler);
+            server.start();
+
+            mServer.add(server);
 
             Log.d(LOG_TAG, "Initialized HTTP/WS Server");
         } catch (Exception e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
-
         try {
-            mSsdp = new SSDP(this);
+            mSsdp = new SSDP(this, port);
             mSsdp.start();
             Log.d(LOG_TAG, "Initialized SSDP/DIAL Discovery");
         } catch (IOException e) {
             Log.e(LOG_TAG, "SSDP Init failed", e);
         }
+    }
 
+    private void initService() {
+        createServer(mPreferences.getString("friendly_name", getString(R.string.cheapcast) + "_" + Build.MODEL));
         mRunning = true;
     }
 
@@ -227,14 +258,30 @@ public class CheapCastService extends Service {
         mSsdp.shutdown();
 
         try {
-            mServer.stop();
+            for(Server server : mServer)
+                server.stop();
         } catch (Exception e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         stopForeground(true);
     }
 
-    private WebSocketHandler mWsHandler = new WebSocketHandler() {
+    @Override
+    public void addedDevice(IUpnpDevice device) {
+        Log.d(LOG_TAG, String.format("Add device %s", device.getFriendlyName()));
+        createServer(device.getFriendlyName());
+        mUpnpDevices.add(device);
+    }
+
+    @Override
+    public void removedDevice(IUpnpDevice device) {
+        Log.d(LOG_TAG, String.format("Remove device %s", device.getFriendlyName()));
+        int i = mUpnpDevices.indexOf(device);
+        mUpnpDevices.remove(device);
+        mServer.remove(i+1);
+    }
+
+    private class CustomWebSocketHandler extends WebSocketHandler {
 
         @Override
         public WebSocket doWebSocketConnect(HttpServletRequest httpServletRequest, String protocol) {
@@ -258,26 +305,37 @@ public class CheapCastService extends Service {
         }
     };
 
-    private Handler mHttpHandler = new AbstractHandler() {
+    public class CastRESTHandler extends AbstractHandler {
+
+        int mPort;
+        String mName;
+
+        public CastRESTHandler(String name, int port)
+        {
+            mName = name;
+            mPort = port;
+        }
+
         @Override
         public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException, ServletException {
             String server = Utils.getLocalV4Address(mNetIf).getHostAddress();
             httpServletResponse.setHeader("Access-Control-Allow-Origin","*");
 
             if(httpServletRequest.getPathInfo().startsWith("/ssdp/device-desc.xml") && httpServletRequest.getMethod().equals("GET")) {
-                Log.d(LOG_TAG, "GET /ssdp/device-desc.xml" + " from "+httpServletRequest.getRemoteAddr() + ", "+httpServletRequest.getHeader("User-Agent"));
+                Log.d(LOG_TAG, String.format(":%d GET /ssdp/device-desc.xml from %s, %s", mPort,
+                    httpServletRequest.getRemoteAddr(), httpServletRequest.getHeader("User-Agent")));
 
                 String deviceDesc = Const.DEVICE_DESC;
-                deviceDesc = deviceDesc.replaceAll("#uuid#", Installation.id(CheapCastService.this));
-                deviceDesc = deviceDesc.replaceAll("#friendlyname#", mPreferences.getString("friendly_name", getString(R.string.cheapcast)+"_"+Build.MODEL));
-                deviceDesc = deviceDesc.replaceAll("#base#", "http://"+server+":8008");
+                deviceDesc = deviceDesc.replaceAll("#uuid#", Installation.id(CheapCastService.this, mPort-START_PORT));
+                deviceDesc = deviceDesc.replaceAll("#friendlyname#", mName);
+                deviceDesc = deviceDesc.replaceAll("#base#", "http://"+server+":"+mPort);
 
                 httpServletResponse.setHeader("Access-Control-Allow-Method", "GET, POST, DELETE, OPTIONS");
                 httpServletResponse.setHeader("Access-Control-Expose-Headers", "Location");
 
                 httpServletResponse.setContentType("application/xml");
                 httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-                httpServletResponse.addHeader("Application-URL", "http://"+server+":8008/apps");
+                httpServletResponse.addHeader("Application-URL", "http://"+server+":"+mPort+"/apps");
                 httpServletResponse.getWriter().print(deviceDesc);
             } else if(httpServletRequest.getPathInfo().equals("/apps") && httpServletRequest.getMethod().equals("GET")) {
 
@@ -290,11 +348,11 @@ public class CheapCastService extends Service {
                 }
 
                 if(activeApp != null) {
-                    Log.d(LOG_TAG, String.format("GET /apps: Redirecting to %s", activeApp.getName()));
+                    Log.d(LOG_TAG, String.format(":%d GET /apps: Redirecting to %s", mPort, activeApp.getName()));
                     httpServletResponse.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-                    httpServletResponse.addHeader("Location", String.format("http://%s:8008/apps/%s", server, activeApp.getName()));
+                    httpServletResponse.addHeader("Location", String.format("http://%s:"+mPort+"/apps/%s", server, activeApp.getName()));
                 } else {
-                    Log.d(LOG_TAG, String.format("GET /apps: SC_NO_CONTENT at /apps"));
+                    Log.d(LOG_TAG, String.format(":%d GET /apps: SC_NO_CONTENT at /apps", mPort));
                     httpServletResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);
                     httpServletResponse.setContentType("application/xml;charset=utf-8");
                     httpServletResponse.setHeader("Access-Control-Allow-Method", "GET, POST, DELETE, OPTIONS");
@@ -302,7 +360,7 @@ public class CheapCastService extends Service {
                 }
             } else if(httpServletRequest.getPathInfo().startsWith("/apps/") && httpServletRequest.getMethod().equals("GET")) {
                 String appName = httpServletRequest.getPathInfo().replace("/apps/","");
-                Log.d(LOG_TAG, String.format("GET /apps/%s",appName));
+                Log.d(LOG_TAG, String.format(":%d GET /apps/%s", mPort, appName));
                 App app = mRegisteredApps.get(appName);
 
                 renderAppStatus(httpServletResponse, app);
@@ -325,15 +383,14 @@ public class CheapCastService extends Service {
             } else if(httpServletRequest.getPathInfo().startsWith("/apps/") && httpServletRequest.getMethod().equals("POST")) {
                 String appName = httpServletRequest.getPathInfo().replace("/apps/","");
 
-
-                Log.d(LOG_TAG, String.format("POST /apps/%s",appName));
+                Log.d(LOG_TAG, String.format(":%d POST /apps/%s", mPort, appName));
                 App app = mRegisteredApps.get(appName);
 
                 if(app != null) {
 
                    // if(mLastApp == null || !mLastApp.equals(app) || !app.getState().equals("running")) {
                         app.setLink("<link rel='run' href='web-1'/>");
-                        app.setConnectionSvcURL(String.format("http://%s:8008/connection/%s", server, appName));
+                        app.setConnectionSvcURL(String.format("http://%s:"+mPort+"/connection/%s", server, appName));
                         app.addProtocol("ramp");
                         app.setState("running");
 
@@ -355,20 +412,20 @@ public class CheapCastService extends Service {
                         mLastApp = app;
 
                         httpServletResponse.setContentType("text/html; charset=utf-8");
-                        httpServletResponse.setHeader("Location", String.format("http://%s:8008/apps/%s/web-1", server, appName));
+                        httpServletResponse.setHeader("Location", String.format("http://%s:"+mPort+"/apps/%s/web-1", server, appName));
                         httpServletResponse.setStatus(HttpServletResponse.SC_CREATED);
                    /* } else {
                         Log.d(LOG_TAG, String.format("App %s already started.", app.getName()));
 
                         httpServletResponse.setContentType("text/html; charset=utf-8");
-                        httpServletResponse.setHeader("Location", String.format("http://%s:8008/apps/%s/web-2", server, appName));
+                        httpServletResponse.setHeader("Location", String.format("http://%s:"+mPort+"/apps/%s/web-2", server, appName));
                         httpServletResponse.setStatus(HttpServletResponse.SC_CREATED);
                     }*/
 
                 }
             } else if(httpServletRequest.getPathInfo().startsWith("/connection/") && httpServletRequest.getMethod().equals("POST")) {
                 String appName = httpServletRequest.getPathInfo().replace("/connection/","");
-                Log.d(LOG_TAG, String.format("POST /connection/%s",appName));
+                Log.d(LOG_TAG, String.format(":%d POST /connection/%s",mPort, appName));
                 App app = mRegisteredApps.get(appName);
 
                 if(app != null) {
@@ -376,11 +433,12 @@ public class CheapCastService extends Service {
                     httpServletResponse.setHeader("Access-Control-Allow-Headers", "Content-Type");
                     httpServletResponse.setContentType("application/json; charset=utf-8");
                     httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-                    httpServletResponse.getWriter().print(String.format("{\"URL\":\"ws://%s:8008/session/%s?%d\",\"pingInterval\":3}", server, appName, app.getRemotes().size()));
+                    httpServletResponse.getWriter().print(String.format("{\"URL\":\"ws://%s:"+mPort+"/session/%s?%d\"," +
+                        "\"pingInterval\":3}", server, appName, app.getRemotes().size()));
                 }
             } else if(httpServletRequest.getPathInfo().equals("/registerApp") && httpServletRequest.getMethod().equals("POST")) {
 
-                Log.d(LOG_TAG, "POST /registerApp/");
+                Log.d(LOG_TAG, String.format(":%d POST /registerApp/", mPort));
 
                 if(mPreferences.getBoolean("allow_custom_apps", false)) {
                     String rawBody = Utils.readerToString(httpServletRequest.getReader());

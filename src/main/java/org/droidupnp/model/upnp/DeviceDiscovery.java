@@ -24,34 +24,31 @@ import java.util.Collection;
 
 import android.util.Log;
 
+import at.maui.cheapcast.activity.PreferenceActivity;
+
 public abstract class DeviceDiscovery {
 
 	protected static final String TAG = "DeviceDiscovery";
 
 	private final BrowsingRegistryListener browsingRegistryListener;
 
-	protected boolean extendedInformation;
-
 	private final ArrayList<IDeviceDiscoveryObserver> observerList;
 
-	public DeviceDiscovery(IServiceListener serviceListener, boolean extendedInformation)
-	{
-		browsingRegistryListener = new BrowsingRegistryListener();
-		this.extendedInformation = extendedInformation;
-		observerList = new ArrayList<IDeviceDiscoveryObserver>();
-	}
+	private IServiceListener serviceListener;
 
 	public DeviceDiscovery(IServiceListener serviceListener)
 	{
-		this(serviceListener, false);
+        this.serviceListener = serviceListener;
+		browsingRegistryListener = new BrowsingRegistryListener();
+		observerList = new ArrayList<IDeviceDiscoveryObserver>();
 	}
 
-	public void resume(IServiceListener serviceListener)
+	public void resume()
 	{
 		serviceListener.addListener(browsingRegistryListener);
 	}
 
-	public void pause(IServiceListener serviceListener)
+	public void pause()
 	{
 		serviceListener.removeListener(browsingRegistryListener);
 	}
@@ -85,11 +82,9 @@ public abstract class DeviceDiscovery {
 	{
 		observerList.add(o);
 
-        // TODO get the upnp service
-		//final Collection<IUpnpDevice> upnpDevices = Main.upnpServiceController.getServiceListener()
-		//		.getFilteredDeviceList(getCallableFilter());
-		//for (IUpnpDevice d : upnpDevices)
-		//	o.addedDevice(d);
+		final Collection<IUpnpDevice> upnpDevices = serviceListener.getFilteredDeviceList(getCallableFilter());
+		for (IUpnpDevice d : upnpDevices)
+			o.addedDevice(d);
 	}
 
 	public void removeObserver(IDeviceDiscoveryObserver o)

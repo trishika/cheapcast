@@ -17,29 +17,42 @@
 package at.maui.cheapcast;
 
 import android.content.Context;
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class Installation {
-    private static String sID = null;
+
+    private static final String LOG_TAG = "Installation";
+    private static ArrayList<String> sID = new ArrayList<String>();
     private static final String INSTALLATION = "INSTALLATION";
 
-    public synchronized static String id(Context context) {
-        if (sID == null) {
-            File installation = new File(context.getFilesDir(), INSTALLATION);
+    public synchronized static String id(Context context, int id) {
+        String uuid = null;
+        try {
+            uuid = sID.get(id);
+        } catch (IndexOutOfBoundsException e) {
+            sID.ensureCapacity(id+1);
+            for(int i=sID.size(); i<=id; i++)
+                sID.add(null);
+        }
+
+        if (uuid == null) {
+            File installation = new File(context.getFilesDir(), INSTALLATION+id);
             try {
                 if (!installation.exists())
                     writeInstallationFile(installation);
-                sID = readInstallationFile(installation);
+                sID.set(id, readInstallationFile(installation));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
-
-        return sID;
+        return sID.get(id);
     }
 
     private static String readInstallationFile(File installation) throws IOException {

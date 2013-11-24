@@ -74,7 +74,7 @@ public class ConnectionSocket implements WebSocket, WebSocket.OnTextMessage, Web
             response.setType("NEWCHANNEL");
             response.setRequestId(mApp.getRemotes().size());
             response.setSenderId(mApp.getReceivers().size());
-            response.setURL(String.format("ws://localhost:8008/receiver/%s", mApp.getName()));
+            response.setURL(String.format("ws://localhost:8009/receiver/%s", mApp.getName()));
             try {
                 mConnection.sendMessage(mGson.toJson(response));
                 Log.d(LOG_TAG, "replied to CHANNELRESPONSE");

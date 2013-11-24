@@ -112,6 +112,8 @@ public abstract class UpnpDeviceListFragment extends ListFragment implements IDe
 	public void onListItemClick(ListView l, View v, int position, long id)
 	{
 		super.onListItemClick(l, v, position, id);
+		showInfoDialog(position);
+		Log.d(TAG, "Click on renderer " + list.getItem(position));
 	}
 
 	@Override
@@ -126,7 +128,6 @@ public abstract class UpnpDeviceListFragment extends ListFragment implements IDe
 				@Override
 				public void run()
 				{
-
 					int position = list.getPosition(d);
 					if (position >= 0)
 					{

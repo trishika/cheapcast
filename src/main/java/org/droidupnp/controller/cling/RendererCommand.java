@@ -104,7 +104,7 @@ public class RendererCommand implements Runnable, IRendererCommand {
 
 	public static Service getRenderingControlService()
 	{
-        /// XXX This is broken because of bullshit architecture that need to be rewrite ASAP
+        // FIXME This is broken because of bullshit architecture that need to be rewrite ASAP
 
 //		if (PreferenceActivity.upnpServiceController.getSelectedRenderer() == null)
 //			return null;
@@ -116,7 +116,7 @@ public class RendererCommand implements Runnable, IRendererCommand {
 
 	public static Service getAVTransportService()
 	{
-        /// XXX This is broken because of bullshit architecture that need to be rewrite ASAP
+        // FIXME This is broken because of bullshit architecture that need to be rewrite ASAP
 //		if (Main.upnpServiceController.getSelectedRenderer() == null)
 //			return null;
 //

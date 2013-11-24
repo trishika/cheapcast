@@ -10,6 +10,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>6</maven.compiler.source>
+		<maven.compiler.target>6</maven.compiler.target>
+
 		<platform.version>4.1.1.4</platform.version>
 		<android.plugin.version>3.6.0</android.plugin.version>
 
@@ -17,6 +20,17 @@
 		<jetty.version>8.1.8.v20121106</jetty.version>
 		<slf4j.version>1.6.1</slf4j.version>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>4thline.org-repo</id>
+			<url>http://4thline.org/m2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 
 	<dependencies>
 		<dependency>
@@ -70,6 +84,11 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-client</artifactId>
             <version>${jetty.version}</version>
         </dependency>
         <dependency>

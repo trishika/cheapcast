@@ -21,8 +21,8 @@ package org.droidupnp.view;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.ListView;
+
+import at.maui.cheapcast.activity.PreferenceActivity;
 
 public class RendererDeviceFragment extends UpnpDeviceListFragment {
 
@@ -37,7 +37,7 @@ public class RendererDeviceFragment extends UpnpDeviceListFragment {
 	public void onActivityCreated(Bundle savedInstanceState)
 	{
 		super.onActivityCreated(savedInstanceState);
-		//Main.upnpServiceController.getRendererDiscovery().addObserver(this);
+		PreferenceActivity.upnpServiceController.getRendererDiscovery().addObserver(this);
 		Log.d(TAG, "onActivityCreated");
 	}
 
@@ -45,15 +45,7 @@ public class RendererDeviceFragment extends UpnpDeviceListFragment {
 	public void onDestroy()
 	{
 		super.onDestroy();
-		//Main.upnpServiceController.getRendererDiscovery().removeObserver(this);
+        PreferenceActivity.upnpServiceController.getRendererDiscovery().removeObserver(this);
 		Log.d(TAG, "onDestroy");
-	}
-
-	@Override
-	public void onListItemClick(ListView l, View v, int position, long id)
-	{
-		super.onListItemClick(l, v, position, id);
-		showInfoDialog(position);
-		Log.d(TAG, "Click on renderer " + list.getItem(position));
 	}
 }

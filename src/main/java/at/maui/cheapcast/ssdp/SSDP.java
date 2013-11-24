@@ -20,6 +20,8 @@ import android.content.Context;
 import android.util.Log;
 import at.maui.cheapcast.Installation;
 import at.maui.cheapcast.Utils;
+import at.maui.cheapcast.service.CheapCastService;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.Scanner;
@@ -61,11 +63,13 @@ public class SSDP extends Thread {
     private NetworkInterface mNetIf;
 
     private Context mContext;
+    private int mPort;
 
     private boolean mRunning = false;
 
-    public SSDP(Context ctx) throws IOException {
+    public SSDP(Context ctx, int port) throws IOException {
         mContext = ctx;
+        mPort = port;
         mNetIf = Utils.getActiveNetworkInterface();
     }
 
@@ -105,10 +109,11 @@ public class SSDP extends Thread {
                                                  "HOST: 239.255.255.250:1900\n"+
                                                  "EXT:\n"+
                                                  "CACHE-CONTROL: max-age=1800\n"+
-                                                 "LOCATION: http://"+Utils.getLocalV4Address(mNetIf).getHostAddress()+":8008/ssdp/device-desc.xml\n" +
+                                                 "LOCATION: http://"+Utils.getLocalV4Address(mNetIf).getHostAddress()+
+                                                    ":"+mPort+"/ssdp/device-desc.xml\n" +
                                                  "CONFIGID.UPNP.ORG: 7339\n" +
                                                  "BOOTID.UPNP.ORG: 7339\n" +
-                                                 "USN: uuid:"+ Installation.id(mContext)+"\n\n";
+                                                 "USN: uuid:"+ Installation.id(mContext, mPort - CheapCastService.START_PORT)+"\n\n";
 
 
                         DatagramPacket response = new DatagramPacket(responsePayload.getBytes(), responsePayload.length(), new InetSocketAddress(dp.getAddress(),dp.getPort()));

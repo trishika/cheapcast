@@ -19,26 +19,39 @@
 
 package org.droidupnp.controller.cling;
 
+import org.droidupnp.controller.upnp.IUpnpServiceController;
+import org.droidupnp.model.CObservable;
 import org.droidupnp.model.cling.UpnpService;
-import org.droidupnp.model.cling.UpnpServiceController;
+import org.droidupnp.model.upnp.RendererDiscovery;
 import org.fourthline.cling.model.meta.LocalDevice;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-public class ServiceController extends UpnpServiceController
+public class ServiceController implements IUpnpServiceController
 {
 	private static final String TAG = "Cling.ServiceController";
 
 	private final ServiceListener upnpServiceListener;
-	private Activity activity = null;
+	protected CObservable rendererObservable;
+	private final RendererDiscovery rendererDiscovery;
+
+	private Context ctx = null;
 
 	public ServiceController(Context ctx)
 	{
 		super();
+		this.ctx = ctx;
 		upnpServiceListener = new ServiceListener(ctx);
+		rendererObservable = new CObservable();
+		rendererDiscovery = new RendererDiscovery(getServiceListener());
+	}
+
+	@Override
+	public RendererDiscovery getRendererDiscovery()
+	{
+		return rendererDiscovery;
 	}
 
 	@Override
@@ -56,20 +69,17 @@ public class ServiceController extends UpnpServiceController
 	@Override
 	public void pause()
 	{
-		super.pause();
-		activity.unbindService(upnpServiceListener.getServiceConnexion());
-		activity = null;
+		rendererDiscovery.pause();
+		ctx.unbindService(upnpServiceListener.getServiceConnexion());
 	}
 
 	@Override
-	public void resume(Activity activity)
+	public void resume()
 	{
-		super.resume(activity);
-		this.activity = activity;
+		rendererDiscovery.resume();
 
-		// This will start the UPnP service if it wasn't already started
-		Log.d(TAG, "Start upnp service");
-		activity.bindService(new Intent(activity, UpnpService.class), upnpServiceListener.getServiceConnexion(),
+		Log.d(TAG, "Bind to upnp service");
+		ctx.bindService(new Intent(ctx, UpnpService.class), upnpServiceListener.getServiceConnexion(),
 				Context.BIND_AUTO_CREATE);
 	}
 
@@ -82,5 +92,4 @@ public class ServiceController extends UpnpServiceController
 	public void removeDevice(LocalDevice localDevice) {
 		upnpServiceListener.getUpnpService().getRegistry().removeDevice(localDevice);
 	}
-
 }

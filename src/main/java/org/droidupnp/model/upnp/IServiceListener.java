@@ -25,6 +25,8 @@ import android.content.ServiceConnection;
 
 public interface IServiceListener {
 
+	public boolean connected();
+
 	public void addListener(IRegistryListener registryListener);
 
 	public void removeListener(IRegistryListener registryListener);

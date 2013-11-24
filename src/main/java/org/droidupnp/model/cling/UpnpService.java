@@ -42,6 +42,12 @@ public class UpnpService extends AndroidUpnpServiceImpl {
 	}
 
 	@Override
+	public android.os.IBinder onBind(android.content.Intent intent)
+	{
+		return super.onBind(intent);
+	}
+
+	@Override
 	public boolean onUnbind(Intent intent)
 	{
 		Log.d(this.getClass().getName(), "Unbind");

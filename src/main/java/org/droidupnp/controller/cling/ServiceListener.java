@@ -19,8 +19,6 @@
 
 package org.droidupnp.controller.cling;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -45,8 +43,8 @@ public class ServiceListener implements IServiceListener
 {
 	private static final String TAG = "Cling.ServiceListener";
 
-	protected AndroidUpnpService upnpService;
-	protected ArrayList<IRegistryListener> waitingListener;
+	protected AndroidUpnpService upnpService = null;
+	protected ArrayList<IRegistryListener> waitingListener = null;
 
 	private MediaServer mediaServer = null;
 	private Context ctx = null;
@@ -55,6 +53,12 @@ public class ServiceListener implements IServiceListener
 	{
 		waitingListener = new ArrayList<IRegistryListener>();
 		this.ctx = ctx;
+	}
+
+	@Override
+	public boolean connected()
+	{
+		return (upnpService!=null);
 	}
 
 	@Override
@@ -80,13 +84,16 @@ public class ServiceListener implements IServiceListener
 		ArrayList<IUpnpDevice> deviceList = new ArrayList<IUpnpDevice>();
 		try
 		{
-			for (Device device : upnpService.getRegistry().getDevices())
+			if(upnpService!=null)
 			{
-				IUpnpDevice upnpDevice = new CDevice(device);
-				filter.setDevice(upnpDevice);
+				for (Device device : upnpService.getRegistry().getDevices())
+				{
+					IUpnpDevice upnpDevice = new CDevice(device);
+					filter.setDevice(upnpDevice);
 
 				if (filter.call())
 					deviceList.add(upnpDevice);
+				}
 			}
 		}
 		catch (Exception e)
@@ -102,6 +109,10 @@ public class ServiceListener implements IServiceListener
 		public void onServiceConnected(ComponentName className, IBinder service)
 		{
 			Log.i(TAG, "Service connexion");
+			if(!(service instanceof AndroidUpnpService)){
+				Log.i(TAG, "Not the AndroidUpnpService " + service);
+				return;
+			}
 			upnpService = (AndroidUpnpService) service;
 
 			for (IRegistryListener registryListener : waitingListener)

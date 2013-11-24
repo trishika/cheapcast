@@ -34,24 +34,18 @@ import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
+import org.droidupnp.controller.cling.ServiceController;
 import org.droidupnp.controller.upnp.IUpnpServiceController;
 import org.droidupnp.model.upnp.IFactory;
 
-/**
- * Created with IntelliJ IDEA.
- * User: maui
- * Date: 11.08.13
- * Time: 00:06
- * To change this template use File | Settings | File Templates.
- */
 public class PreferenceActivity extends SherlockPreferenceActivity {
 
     private static final String LOG_TAG = "PreferenceActivity";
     private Intent mServiceIntent;
+    private Intent mServiceUPnPIntent;
     private boolean mConnected = false;
     private SharedPreferences mPreferences;
 
-    public static IFactory factory = null;
     public static IUpnpServiceController upnpServiceController = null;
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -87,15 +81,12 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
         }
 
         addPreferencesFromResource(R.xml.settings);
+
+        upnpServiceController = new ServiceController(this);
+
         mServiceIntent = new Intent(PreferenceActivity.this, CheapCastService.class);
 
-         // Use cling factory
-        if (factory == null)
-            factory = new org.droidupnp.controller.cling.Factory();
-
-        // Upnp service
-        if (upnpServiceController == null)
-            upnpServiceController = factory.createUpnpServiceController(this);
+        Log.d(LOG_TAG, "Preference activity intialised, upnpServiceController" +upnpServiceController);
     }
 
     @Override
@@ -106,13 +97,16 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
     @Override
     protected void onResume() {
         super.onStart();
+        upnpServiceController.resume();
         bindService(mServiceIntent, mConnection, 0);
     }
 
     @Override
     protected void onPause() {
+        Log.d(LOG_TAG, "onPause");
         if(mConnected)
             unbindService(mConnection);
+        //upnpServiceController.pause();
         super.onPause();    //To change body of overridden methods use File | Settings | File Templates.
     }
 

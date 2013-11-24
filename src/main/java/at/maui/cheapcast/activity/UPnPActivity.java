@@ -5,9 +5,8 @@ import android.support.v4.app.FragmentTransaction;
 
 import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockFragmentActivity;
 
-import at.maui.cheapcast.Const;
+import org.droidupnp.view.RendererDeviceFragment;
 import at.maui.cheapcast.R;
-import at.maui.cheapcast.fragment.DonationsFragment;
 
 public class UPnPActivity extends RoboSherlockFragmentActivity
 {
@@ -20,6 +19,11 @@ public class UPnPActivity extends RoboSherlockFragmentActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
         getSupportActionBar().setIcon(R.drawable.ic_ab);
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        RendererDeviceFragment fragment = new RendererDeviceFragment();
+        ft.replace(R.id.content, fragment, "UPnPFragment");
+        ft.commit();
     }
 
     @Override

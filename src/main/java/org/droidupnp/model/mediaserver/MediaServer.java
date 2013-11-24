@@ -123,7 +123,7 @@ public class MediaServer extends fi.iki.elonen.SimpleWebServer
 
 	private ServerObject getFileServerObject(String id) throws InvalidIdentificatorException
 	{
-        // TODO implatation
+        // TODO implementation
 		throw new InvalidIdentificatorException(id + " was not found in media database");
 	}
 
