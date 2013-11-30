@@ -14,7 +14,7 @@
 		<maven.compiler.target>6</maven.compiler.target>
 
 		<platform.version>4.1.1.4</platform.version>
-		<android.plugin.version>3.6.0</android.plugin.version>
+		<android.plugin.version>3.8.0</android.plugin.version>
 
 		<cling.version>2.0-alpha2</cling.version>
 		<jetty.version>8.1.8.v20121106</jetty.version>

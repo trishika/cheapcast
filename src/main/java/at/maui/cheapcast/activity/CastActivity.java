@@ -71,8 +71,7 @@ public class CastActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);    //To change body of overridden methods use File | Settings | File Templates.
-        Log.d(LOG_TAG, "onNewIntent()");
-
+        Log.d(LOG_TAG, "onNewIntent() data : " + intent.getDataString());
 
         injectWebsocket(mWebView);
         mWebView.loadUrl(intent.getDataString());
@@ -103,6 +102,10 @@ public class CastActivity extends Activity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             mWebView.getSettings().setAllowContentAccess(true);
         }
+
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            WebView.setWebContentsDebuggingEnabled(true);
+//        }
 
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setDomStorageEnabled(true);
@@ -198,6 +201,7 @@ public class CastActivity extends Activity {
     }
 
     public void load() {
+        Log.d(LOG_TAG, "load() data : " + getIntent().getDataString());
         injectWebsocket(mWebView);
         mWebView.loadUrl(getIntent().getDataString());
     }
@@ -253,11 +257,57 @@ public class CastActivity extends Activity {
                 "WebSocket.prototype.onclose  = function(msg) { console.log('onclose not implemented.'); };" +
                 "})()");
 
+        // Listen for video to start
         webView.loadUrl("javascript:(function() {" +
-                "document.addEventListener('DOMNodeInserted', function(event) { if (event.target.nodeName.toLowerCase() === \"video\"){ console.log('video added'); } }, false); "+
-                " })()");
+            "document.addEventListener('DOMNodeInserted', function(event) { " +
+                "if (event.target.nodeName.toLowerCase() === \"video\"){ " +
+                    "console.log('video added');" +
+                "}" +
+            "}, false); "+
+        " })()");
 
-        webView.loadUrl("javascript:(function() { var itm = document.getElementsByTagName('audio')[0]; if(itm) { itm.addEventListener('loadedmetadata', function(evt) { console.log('loadedmetadata'); },false); } })()");
+        // Listen for audio to start
+//        webView.loadUrl("javascript:(function() {" +
+//            "document.addEventListener('DOMNodeInserted', function(event) { " +
+//                "if (event.target.nodeName.toLowerCase() === \"audio\"){ " +
+                    //"event.target.setAttibute('preload', 'none');"+
+//                    "console.log('audio added');" +
+//                    "console.log('audio added ' + event.target.getAttribute('src'));" +
+//                    "xhr = new XMLHttpRequest();" +
+//                    "xhr.open('GET', event.target.getAttribute('src'), true);" +
+//                    "xhr.responseType = 'arraybuffer';" +
+//                    "xhr.onload = function () {" +
+//                        "console.log('xhr : onload !' + xhr.response);" +
+//                    "};" +
+//                    "xhr.onerror = function () {" +
+//                        "console.log('xhr : onerror !');" +
+//                    "};" +
+//                    "xhr.send();"+
+//                "}" +
+//            "}, false); "+
+//        " })()");
+
+        // Listen for audio to start
+        webView.loadUrl("javascript:(function() { " +
+            "var itm = document.getElementsByTagName('audio')[0];" +
+            "if(itm) {" +
+                "itm.addEventListener('loadedmetadata', function(evt) {" +
+                    "console.log('loadedmetadata');" +
+                "},false);" +
+            "}" +
+        "})()");
+/*
+        xhr = new XMLHttpRequest();
+        xhr.open('GET', './sound.mp3', true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = function () {
+    // Processing response data - xhr.response
+        };
+        xhr.onerror = function () {
+    // Handling errors
+        };
+        xhr.send();
+*/
     }
 
     private ICheapCastCallback mCallback = new ICheapCastCallback.Stub() {
