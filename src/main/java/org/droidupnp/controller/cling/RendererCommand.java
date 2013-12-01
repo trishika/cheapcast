@@ -24,6 +24,7 @@ import org.droidupnp.model.cling.RendererState;
 import org.droidupnp.model.cling.TrackMetadata;
 import org.droidupnp.model.cling.didl.ClingDIDLItem;
 import org.droidupnp.model.upnp.IRendererCommand;
+import org.droidupnp.model.upnp.IUpnpDevice;
 import org.droidupnp.model.upnp.didl.IDIDLItem;
 import org.fourthline.cling.controlpoint.ControlPoint;
 import org.fourthline.cling.model.action.ActionInvocation;
@@ -64,14 +65,16 @@ public class RendererCommand implements Runnable, IRendererCommand {
 
 	private final RendererState rendererState;
 	private final ControlPoint controlPoint;
+    private final IUpnpDevice device;
 
 	public Thread thread;
 	boolean pause = false;
 
-	public RendererCommand(ControlPoint controlPoint, RendererState rendererState)
+	public RendererCommand(ControlPoint controlPoint, RendererState rendererState, IUpnpDevice device)
 	{
 		this.rendererState = rendererState;
 		this.controlPoint = controlPoint;
+        this.device = device;
 
 		thread = new Thread(this);
 		pause = true;
@@ -102,27 +105,14 @@ public class RendererCommand implements Runnable, IRendererCommand {
 			thread.interrupt();
 	}
 
-	public static Service getRenderingControlService()
+	public Service getRenderingControlService()
 	{
-        // FIXME This is broken because of bullshit architecture that need to be rewrite ASAP
-
-//		if (PreferenceActivity.upnpServiceController.getSelectedRenderer() == null)
-//			return null;
-//
-//		return ((CDevice) Main.upnpServiceController.getSelectedRenderer()).getDevice().findService(
-//				new UDAServiceType("RenderingControl"));
-        return null;
+		return ((CDevice) device).getDevice().findService(new UDAServiceType("RenderingControl"));
 	}
 
-	public static Service getAVTransportService()
+	public Service getAVTransportService()
 	{
-        // FIXME This is broken because of bullshit architecture that need to be rewrite ASAP
-//		if (Main.upnpServiceController.getSelectedRenderer() == null)
-//			return null;
-//
-//		return ((CDevice) Main.upnpServiceController.getSelectedRenderer()).getDevice().findService(
-//				new UDAServiceType("AVTransport"));
-        return null;
+		return ((CDevice) device).getDevice().findService(new UDAServiceType("AVTransport"));
 	}
 
 	@Override
@@ -308,28 +298,9 @@ public class RendererCommand implements Runnable, IRendererCommand {
 		if (getAVTransportService() == null)
 			return;
 
-		DIDLObject obj = ((ClingDIDLItem) item).getObject();
-		if (!(obj instanceof Item))
-			return;
-
-		Item upnpItem = (Item) obj;
-
-		String type = "";
-		if (upnpItem instanceof AudioItem)
-			type = "audioItem";
-		else if (upnpItem instanceof VideoItem)
-			type = "videoItem";
-		else if (upnpItem instanceof ImageItem)
-			type = "imageItem";
-		else if (upnpItem instanceof PlaylistItem)
-			type = "playlistItem";
-		else if (upnpItem instanceof TextItem)
-			type = "textItem";
-
 		// TODO genre && artURI
-		final TrackMetadata trackMetadata = new TrackMetadata(upnpItem.getId(), upnpItem.getTitle(),
-				upnpItem.getCreator(), "", "", upnpItem.getFirstResource().getValue(),
-				"object.item." + type);
+		final TrackMetadata trackMetadata = new TrackMetadata(item.getId(), item.getTitle(),
+                item.getArtist(), "", "", item.getURI(), "object.item." + item.getType());
 
 		Log.e(TAG, "TrackMetadata : "+trackMetadata.toString());
 
@@ -348,7 +319,6 @@ public class RendererCommand implements Runnable, IRendererCommand {
 				Log.w(TAG, "Fail to stop ! " + arg2);
 			}
 		});
-
 	}
 
 	// Update

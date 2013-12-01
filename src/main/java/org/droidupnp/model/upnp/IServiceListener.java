@@ -37,6 +37,8 @@ public interface IServiceListener {
 
 	public Collection<IUpnpDevice> getDeviceList();
 
+    public IUpnpDevice getDevice(String udn);
+
 	public Collection<IUpnpDevice> getFilteredDeviceList(ICallableFilter filter);
 
 	public ServiceConnection getServiceConnexion();

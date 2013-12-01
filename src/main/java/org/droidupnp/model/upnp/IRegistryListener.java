@@ -25,4 +25,6 @@ public interface IRegistryListener {
 
 	public void deviceRemoved(final IUpnpDevice device);
 
+    public void connected();
+
 }

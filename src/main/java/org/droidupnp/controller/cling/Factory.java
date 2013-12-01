@@ -27,6 +27,7 @@ import org.droidupnp.model.upnp.ARendererState;
 import org.droidupnp.model.upnp.IFactory;
 import org.droidupnp.model.upnp.IRendererCommand;
 import org.droidupnp.model.upnp.IRendererState;
+import org.droidupnp.model.upnp.IUpnpDevice;
 import org.fourthline.cling.android.AndroidUpnpService;
 import org.fourthline.cling.controlpoint.ControlPoint;
 
@@ -35,14 +36,14 @@ import at.maui.cheapcast.activity.PreferenceActivity;
 public class Factory implements IFactory {
 
 	@Override
-	public IRendererCommand createRendererCommand(IRendererState rs)
+	public IRendererCommand createRendererCommand(IUpnpServiceController serviceController, IUpnpDevice device, IRendererState rs)
 	{
-		AndroidUpnpService aus = ((ServiceListener) PreferenceActivity.upnpServiceController.getServiceListener()).getUpnpService();
+		AndroidUpnpService aus = ((ServiceListener) serviceController.getServiceListener()).getUpnpService();
 		ControlPoint cp = null;
 		if (aus != null)
 			cp = aus.getControlPoint();
 		if (cp != null)
-			return new RendererCommand(cp, (RendererState) rs);
+			return new RendererCommand(cp, (RendererState) rs, device);
 
 		return null;
 	}

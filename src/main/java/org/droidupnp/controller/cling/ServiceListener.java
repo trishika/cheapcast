@@ -31,6 +31,7 @@ import org.droidupnp.model.upnp.IServiceListener;
 import org.droidupnp.model.upnp.IUpnpDevice;
 import org.fourthline.cling.android.AndroidUpnpService;
 import org.fourthline.cling.model.meta.Device;
+import org.fourthline.cling.model.types.UDN;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -108,15 +109,16 @@ public class ServiceListener implements IServiceListener
 		@Override
 		public void onServiceConnected(ComponentName className, IBinder service)
 		{
-			Log.i(TAG, "Service connexion");
+			Log.i(TAG, "Service connexion : " + className);
 			if(!(service instanceof AndroidUpnpService)){
-				Log.i(TAG, "Not the AndroidUpnpService " + service);
+				Log.e(TAG, "Not the AndroidUpnpService " + service);
 				return;
 			}
 			upnpService = (AndroidUpnpService) service;
 
 			for (IRegistryListener registryListener : waitingListener)
 			{
+                registryListener.connected();
 				addListenerSafe(registryListener);
 			}
 
@@ -143,14 +145,32 @@ public class ServiceListener implements IServiceListener
 		return upnpService;
 	}
 
+    public IUpnpDevice getDevice(String udn){
+        if(upnpService == null)
+        {
+            Log.e(TAG, "No upnp service !!!");
+            return null;
+        }
+
+        Collection<Device> cD = upnpService.getRegistry().getDevices();
+        for(Device d : cD)
+            Log.w(TAG, d.toString());
+        return new CDevice(upnpService.getRegistry().getDevice(new UDN(udn), true));
+    }
+
 	@Override
 	public void addListener(IRegistryListener registryListener)
 	{
 		Log.d(TAG, "Add Listener !");
 		if (upnpService != null)
+        {
 			addListenerSafe(registryListener);
+            registryListener.connected();
+        }
 		else
+        {
 			waitingListener.add(registryListener);
+        }
 	}
 
 	private void addListenerSafe(IRegistryListener registryListener)

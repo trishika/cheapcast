@@ -28,5 +28,5 @@ public interface IFactory {
 
 	public ARendererState createRendererState();
 
-	public IRendererCommand createRendererCommand(IRendererState rs);
+    public IRendererCommand createRendererCommand(IUpnpServiceController serviceController, IUpnpDevice device, IRendererState rs);
 }

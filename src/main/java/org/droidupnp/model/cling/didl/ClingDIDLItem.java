@@ -20,7 +20,13 @@
 package org.droidupnp.model.cling.didl;
 
 import org.droidupnp.model.upnp.didl.IDIDLItem;
+import org.fourthline.cling.support.model.DIDLObject;
+import org.fourthline.cling.support.model.item.AudioItem;
+import org.fourthline.cling.support.model.item.ImageItem;
 import org.fourthline.cling.support.model.item.Item;
+import org.fourthline.cling.support.model.item.PlaylistItem;
+import org.fourthline.cling.support.model.item.TextItem;
+import org.fourthline.cling.support.model.item.VideoItem;
 
 import android.util.Log;
 
@@ -44,4 +50,23 @@ public class ClingDIDLItem extends ClingDIDLObject implements IDIDLItem {
 		}
 		return null;
 	}
+
+    public String getType()
+    {
+        Item upnpItem = (Item) getObject();
+
+        String type = "";
+        if (upnpItem instanceof AudioItem)
+            type = "audioItem";
+        else if (upnpItem instanceof VideoItem)
+            type = "videoItem";
+        else if (upnpItem instanceof ImageItem)
+            type = "imageItem";
+        else if (upnpItem instanceof PlaylistItem)
+            type = "playlistItem";
+        else if (upnpItem instanceof TextItem)
+            type = "textItem";
+
+        return type;
+    }
 }

@@ -19,7 +19,9 @@
 
 package org.droidupnp.model.upnp;
 
-public interface IUpnpDevice {
+import java.io.Serializable;
+
+public interface IUpnpDevice extends Serializable {
 
 	public String getDisplayString();
 

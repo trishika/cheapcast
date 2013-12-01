@@ -22,4 +22,6 @@ package org.droidupnp.model.upnp.didl;
 public interface IDIDLItem extends IDIDLObject {
 
 	public String getURI();
+
+    public String getType();
 }

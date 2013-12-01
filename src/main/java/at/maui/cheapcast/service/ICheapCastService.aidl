@@ -13,4 +13,7 @@ interface ICheapCastService {
 
     void addListener(ICheapCastCallback cb);
     void removeListener();
+
+    void setUpnpURL(int id, String url);
+
 }

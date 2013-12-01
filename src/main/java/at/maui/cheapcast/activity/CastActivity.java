@@ -18,22 +18,30 @@ package at.maui.cheapcast.activity;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.*;
 import android.util.Log;
 import android.view.*;
 import android.webkit.*;
-import at.maui.cheapcast.App;
-import at.maui.cheapcast.Const;
+
+import org.droidupnp.controller.cling.ServiceController;
+import org.droidupnp.model.cling.UpnpRegistry;
+import org.droidupnp.model.upnp.ARendererState;
+import org.droidupnp.model.upnp.IRegistryListener;
+import org.droidupnp.model.upnp.IRendererCommand;
+import org.droidupnp.model.upnp.IUpnpDevice;
+import org.droidupnp.model.upnp.RendererDiscovery;
+import org.droidupnp.model.upnp.didl.SimpleDIDLItem;
+import org.fourthline.cling.android.AndroidUpnpService;
+
 import at.maui.cheapcast.R;
 import at.maui.cheapcast.service.CheapCastService;
+import at.maui.cheapcast.service.DownloadService;
 import at.maui.cheapcast.service.ICheapCastCallback;
 import at.maui.cheapcast.service.ICheapCastService;
 import at.maui.cheapcast.ws.WebSocketFactory;
-
-import java.io.IOException;
-
 
 public class CastActivity extends Activity {
 
@@ -45,6 +53,10 @@ public class CastActivity extends Activity {
     private Handler mHandler = new Handler();
     private PowerManager mPowerManager;
     private PowerManager.WakeLock mWakeLock;
+
+    private IRendererCommand mDeviceCommand = null;
+    private ServiceController mServiceController = null;
+    private int mUPnPID = -1;
 
     private ICheapCastService mCheapCastService;
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -77,9 +89,43 @@ public class CastActivity extends Activity {
         mWebView.loadUrl(intent.getDataString());
     }
 
+//    private class UpnpRegistryListener implements IRegistryListener {
+//        public void deviceAdded(final IUpnpDevice device){}
+//        public void deviceRemoved(final IUpnpDevice device){}
+//
+//        public void connected()
+//        {
+//            IUpnpDevice device = mServiceController.getServiceListener().getDevice(mUDN);
+//            ARendererState rs = PreferenceActivity.factory.createRendererState();
+//            mDeviceCommand = PreferenceActivity.factory.createRendererCommand(device, rs);
+//        }
+//    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState == null) {
+            mUPnPID = getIntent().getExtras().getInt("upnp");
+            if(mUPnPID != -1)
+                Log.i(LOG_TAG, "This is an upnp device !!! " + mUPnPID);
+            else
+                Log.e(LOG_TAG, "Not an upnp device");
+
+//            if(mUDN != "")
+//            {
+//                Log.i(LOG_TAG, ">>>> Got udn " + mUDN);
+//                mServiceController = new ServiceController(getBaseContext());
+//        //        RendererDiscovery rendererDiscovery = new RendererDiscovery(serviceController.getServiceListener());
+//                mServiceController.getServiceListener().addListener(new UpnpRegistryListener());
+//                mServiceController.resume();
+//            }
+//            else
+//            {
+//                Log.w(LOG_TAG, ">>>> Got udn " + mUDN);
+//            }
+        }
 
         // remove title
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -146,7 +192,7 @@ public class CastActivity extends Activity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.d(LOG_TAG_JS, consoleMessage.message()+", "+ consoleMessage.lineNumber());
+                Log.i(LOG_TAG_JS, consoleMessage.message()+", "+ consoleMessage.lineNumber());
 
                 // Ugly fix for broken autoplay
                 if(consoleMessage.message().contains("loadedmetadata")) {
@@ -169,6 +215,62 @@ public class CastActivity extends Activity {
                             mWebView.loadUrl("javascript:(function() { var itm = document.getElementsByTagName('video')[0]; if(itm) { itm.play(); console.log('play already video'); } })()");
                         }
                     },2500);
+                } else if(consoleMessage.message().contains("audio : ")) {
+                    Log.i(LOG_TAG, consoleMessage.message());
+                    String url = consoleMessage.message().split(" : ")[1];
+
+                    Context context  = mWebView.getContext();
+
+                    try {
+                        Log.i(LOG_TAG, "Setting upnp url " + url + " for device " + mUPnPID);
+                        mCheapCastService.setUpnpURL(mUPnPID, url);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+
+//                    Intent intent = new Intent(context, DownloadService.class);
+//                    intent.putExtra("url", url);
+////                    intent.putExtra("receiver", new DownloadReceiver(new Handler()));
+//                    startService(intent);
+
+//                    File filesDir = context.getFilesDir();
+//                    Log.d("FILE PATH", filesDir.getAbsolutePath());
+//                    if (filesDir.exists())
+//                    {
+//                        filesDir.setReadable(true, false);
+//                        try
+//                        {
+//                            byte[]           buffer;
+//                            int              length;
+//                            InputStream      inStream;
+//                            FileOutputStream outStream;
+//
+//                             Log.i(LOG_TAG, "Downloading file "+url);
+//                             inStream  = context.getAssets().open( url );
+//                             outStream = context.openFileOutput("file", Context.MODE_WORLD_READABLE);
+//                             buffer    = new byte[8192];
+//                             while ((length=inStream.read(buffer)) > 0)
+//                             {
+//                                 outStream.write(buffer, 0, length);
+//                             }
+//                             // Close the streams
+//                             inStream.close();
+//                             outStream.flush();
+//                             outStream.close();
+//                        }
+//                        catch (Exception e)
+//                        {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//
+//                    // Feedback
+//                    String[] fileList = mWebView.getContext().fileList();
+//                    Log.i("FILE LIST",  "--------------");
+//                    for (String fileName : fileList)
+//                    {
+//                        Log.i("- FILE", fileName);
+//                    }
                 }
 
                 return super.onConsoleMessage(consoleMessage);    //To change body of overridden methods use File | Settings | File Templates.
@@ -220,7 +322,29 @@ public class CastActivity extends Activity {
     }
 
     private void musicPatch(WebView webView) {
-        webView.loadUrl("javascript:(function() { var itm = document.getElementsByTagName('audio')[0]; if(itm) { itm.play(); console.log('play already'); } })()");
+        webView.loadUrl("javascript:(function() { " +
+                "var itm = document.getElementsByTagName('audio')[0]; " +
+                "if(itm) { " +
+                    "itm.play(); " +
+                    "console.log('play already'); " +
+                    "console.log('audio : ' + itm.getAttribute('src'));" +
+                    "itm.pause();" +
+                    "var src = itm.src;" +
+                    "itm.volume = 0;" +
+//                    "itm.src = '';" +
+
+//                    "var xhr = new XMLHttpRequest();" +
+//                    "xhr.open('GET', src, true);" +
+//                    "xhr.responseType = 'arraybuffer';" +
+//                    "xhr.onload = function () {" +
+//                         "console.log('xhr : onload !' + xhr.response);" +
+//                    "};" +
+//                    "xhr.onerror = function () {" +
+//                         "console.log('xhr : onerror !');" +
+//                    "};" +
+//                    "xhr.send();"+
+                "} " +
+            "})()");
         webView.loadUrl("javascript:(function() { var itm = document.getElementsByTagName('video')[0]; if(itm) { itm.play(); console.log('play already'); } })()");
     }
 
@@ -267,12 +391,32 @@ public class CastActivity extends Activity {
         " })()");
 
         // Listen for audio to start
-//        webView.loadUrl("javascript:(function() {" +
-//            "document.addEventListener('DOMNodeInserted', function(event) { " +
-//                "if (event.target.nodeName.toLowerCase() === \"audio\"){ " +
-                    //"event.target.setAttibute('preload', 'none');"+
-//                    "console.log('audio added');" +
-//                    "console.log('audio added ' + event.target.getAttribute('src'));" +
+        webView.loadUrl("javascript:(function() {"+
+                "function interceptAudio() {" +
+                    "var itm = document.getElementsByTagName('audio')[0];" +
+                    "console.log('audio : ' + itm.getAttribute('src'));" +
+                    "itm.stop();" +
+    //                "event.target.setAttibute('preload', 'none');"+
+    //                    "xhr = new XMLHttpRequest();" +
+    //                    "xhr.open('GET', event.target.getAttribute('src'), true);" +
+    //                    "xhr.responseType = 'arraybuffer';" +
+    //                    "xhr.onload = function () {" +
+    //                        "console.log('xhr : onload !' + xhr.response);" +
+    //                    "};" +
+    //                    "xhr.onerror = function () {" +
+    //                        "console.log('xhr : onerror !');" +
+    //                    "};" +
+    //                    "xhr.send();"+
+                "}"+
+            "})()");
+
+        // Listen for audio to start
+        webView.loadUrl("javascript:(function() {" +
+            "document.addEventListener('DOMNodeInserted', function(event) { " +
+                "if (event.target.nodeName.toLowerCase() === \"audio\"){ " +
+//                    "event.target.setAttibute('preload', 'none');"+
+                    "console.log('audio added');" +
+                    "console.log('audio added ' + event.target.getAttribute('src'));" +
 //                    "xhr = new XMLHttpRequest();" +
 //                    "xhr.open('GET', event.target.getAttribute('src'), true);" +
 //                    "xhr.responseType = 'arraybuffer';" +
@@ -283,9 +427,9 @@ public class CastActivity extends Activity {
 //                        "console.log('xhr : onerror !');" +
 //                    "};" +
 //                    "xhr.send();"+
-//                "}" +
-//            "}, false); "+
-//        " })()");
+                "}" +
+            "}, false); "+
+        " })()");
 
         // Listen for audio to start
         webView.loadUrl("javascript:(function() { " +

@@ -76,6 +76,13 @@ public abstract class DeviceDiscovery {
 				notifyRemoved(device);
 			}
 		}
+
+
+        @Override
+        public void connected()
+        {
+            Log.i(TAG, "Service connected");
+        }
 	}
 
 	public void addObserver(IDeviceDiscoveryObserver o)

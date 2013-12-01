@@ -23,18 +23,15 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.util.Log;
-import at.maui.cheapcast.App;
 import at.maui.cheapcast.R;
 import at.maui.cheapcast.service.CheapCastService;
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
-import org.droidupnp.controller.cling.ServiceController;
 import org.droidupnp.controller.upnp.IUpnpServiceController;
 import org.droidupnp.model.upnp.IFactory;
 
@@ -45,6 +42,8 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
     private Intent mServiceUPnPIntent;
     private boolean mConnected = false;
     private SharedPreferences mPreferences;
+
+    public static IFactory factory = new org.droidupnp.controller.cling.Factory();
 
     public static IUpnpServiceController upnpServiceController = null;
 
@@ -82,7 +81,7 @@ public class PreferenceActivity extends SherlockPreferenceActivity {
 
         addPreferencesFromResource(R.xml.settings);
 
-        upnpServiceController = new ServiceController(this);
+        upnpServiceController = factory.createUpnpServiceController(this);
 
         mServiceIntent = new Intent(PreferenceActivity.this, CheapCastService.class);
 

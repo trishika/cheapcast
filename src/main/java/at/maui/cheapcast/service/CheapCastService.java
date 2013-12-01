@@ -42,18 +42,22 @@ import at.maui.cheapcast.ssdp.SSDP;
 import com.google.gson.Gson;
 
 import org.droidupnp.controller.cling.ServiceController;
+import org.droidupnp.controller.cling.ServiceListener;
 import org.droidupnp.controller.upnp.IUpnpServiceController;
+import org.droidupnp.model.upnp.ARendererState;
 import org.droidupnp.model.upnp.IDeviceDiscoveryObserver;
-import org.droidupnp.model.upnp.IRegistryListener;
+import org.droidupnp.model.upnp.IRendererCommand;
 import org.droidupnp.model.upnp.IUpnpDevice;
 import org.droidupnp.model.upnp.RendererDiscovery;
+import org.droidupnp.model.upnp.didl.SimpleDIDLItem;
 import org.eclipse.jetty.server.AbstractHttpConnection;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketHandler;
+import org.fourthline.cling.android.AndroidUpnpService;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -93,6 +97,21 @@ public class CheapCastService extends Service implements IDeviceDiscoveryObserve
         @Override
         public void removeListener() throws RemoteException {
             mCallback = null;
+        }
+
+        @Override
+        public void setUpnpURL(int id, String url) {
+//            IUpnpDevice device = mServiceController.getServiceListener().getDevice(mUDN);
+            try {
+                IUpnpDevice device = mUpnpDevices.get(id);
+                ARendererState rs = PreferenceActivity.factory.createRendererState();
+                IRendererCommand mDeviceCommand = PreferenceActivity.factory.createRendererCommand(mServiceController, device, rs);
+                mDeviceCommand.launchItem(new SimpleDIDLItem(url));
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "An exception occred in setUpnpURL" );
+            }
+
         }
     };
 
@@ -405,6 +424,12 @@ public class CheapCastService extends Service implements IDeviceDiscoveryObserve
                         i.setData(Uri.parse(appUrl));
                         i.putExtra(Const.APP_EXTRA, app.getName());
                         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        i.putExtra("upnp", mPort-START_PORT-1);
+                        Log.i(LOG_TAG, "Device in use "+ (mPort-START_PORT-1));
+//                        if(mPort-START_PORT-1<0)
+//                            i.putExtra("upnp", "");
+//                        else
+//                            i.putExtra("upnp", mUpnpDevices.get(mPort-START_PORT-1).getUDN());
                         //if(mCallback == null) {
                             startActivity(i);
                         //}

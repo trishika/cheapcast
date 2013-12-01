@@ -39,4 +39,10 @@ public class UpnpDebugListener implements IRegistryListener {
 	{
 		Log.i(TAG, "Device removed : " + device.getDisplayString());
 	}
+
+    @Override
+    public void connected()
+    {
+        Log.i(TAG, "Service connected");
+    }
 }

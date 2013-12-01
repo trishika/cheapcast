@@ -193,7 +193,7 @@ public class CDevice implements IUpnpDevice {
 	public String getUDN()
 	{
 		try {
-			return device.getIdentity().getUdn().toString();
+			return device.getIdentity().getUdn().getIdentifierString();
 		} catch (Exception e) {
 			return "";
 		}
