@@ -39,6 +39,8 @@ import at.maui.cheapcast.activity.PreferenceActivity;
 import at.maui.cheapcast.chromecast.*;
 import at.maui.cheapcast.chromecast.model.AppRegistration;
 import at.maui.cheapcast.ssdp.SSDP;
+import fi.iki.elonen.BufferServer;
+
 import com.google.gson.Gson;
 
 import org.droidupnp.controller.cling.ServiceController;
@@ -78,8 +80,10 @@ public class CheapCastService extends Service implements IDeviceDiscoveryObserve
 
     private SSDP mSsdp;
     private ArrayList<Server> mServer;
-    private ArrayList<IUpnpDevice> mUpnpDevices;
     public static final int START_PORT = 8008;
+    private ArrayList<IUpnpDevice> mUpnpDevices;
+    private ArrayList<BufferServer> mMediaServer;
+    public static final int START_PORT_MEDIA = START_PORT + 1000;
     private IUpnpServiceController mServiceController;
 
     private Gson mGson;
@@ -101,15 +105,25 @@ public class CheapCastService extends Service implements IDeviceDiscoveryObserve
 
         @Override
         public void setUpnpURL(int id, String url) {
-//            IUpnpDevice device = mServiceController.getServiceListener().getDevice(mUDN);
+
             try {
+
+                // Start the media server if not started yet
+//                if(mMediaServer.get(id) == null)
+//                {
+//                    mMediaServer.set(id, new BufferServer(null, START_PORT_MEDIA+id));
+//                }
+//                mMediaServer.get(id).setUri(url);
+//                mMediaServer.get(id).start();
+                String ip = Utils.getLocalV4Address(mNetIf).getHostAddress();
                 IUpnpDevice device = mUpnpDevices.get(id);
                 ARendererState rs = PreferenceActivity.factory.createRendererState();
                 IRendererCommand mDeviceCommand = PreferenceActivity.factory.createRendererCommand(mServiceController, device, rs);
+//                mDeviceCommand.launchItem(new SimpleDIDLItem("http://"+ip+":"+(START_PORT_MEDIA+id)+"/audio.mp3"));
                 mDeviceCommand.launchItem(new SimpleDIDLItem(url));
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(LOG_TAG, "An exception occred in setUpnpURL" );
+                Log.e(LOG_TAG, "An exception occured in setUpnpURL" );
             }
 
         }
@@ -149,6 +163,7 @@ public class CheapCastService extends Service implements IDeviceDiscoveryObserve
 
         mServer = new ArrayList<Server>();
         mUpnpDevices = new ArrayList<IUpnpDevice>();
+        mMediaServer = new ArrayList<BufferServer>();
     }
 
     private void registerApp(App app) {
@@ -290,6 +305,7 @@ public class CheapCastService extends Service implements IDeviceDiscoveryObserve
         Log.d(LOG_TAG, String.format("Add device %s", device.getFriendlyName()));
         createServer(device.getFriendlyName());
         mUpnpDevices.add(device);
+        mMediaServer.add(null);
     }
 
     @Override
@@ -297,6 +313,7 @@ public class CheapCastService extends Service implements IDeviceDiscoveryObserve
         Log.d(LOG_TAG, String.format("Remove device %s", device.getFriendlyName()));
         int i = mUpnpDevices.indexOf(device);
         mUpnpDevices.remove(device);
+        mMediaServer.remove(i);
         mServer.remove(i+1);
     }
 

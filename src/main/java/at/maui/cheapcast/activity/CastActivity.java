@@ -215,6 +215,18 @@ public class CastActivity extends Activity {
                             mWebView.loadUrl("javascript:(function() { var itm = document.getElementsByTagName('video')[0]; if(itm) { itm.play(); console.log('play already video'); } })()");
                         }
                     },2500);
+                } else if(consoleMessage.message().contains("video : ")) {
+                    Log.i(LOG_TAG, consoleMessage.message());
+                    String url = consoleMessage.message().split(" : ")[1];
+
+                    Context context  = mWebView.getContext();
+
+                    try {
+                        Log.i(LOG_TAG, "Setting upnp url " + url + " for device " + mUPnPID);
+                        mCheapCastService.setUpnpURL(mUPnPID, url);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
                 } else if(consoleMessage.message().contains("audio : ")) {
                     Log.i(LOG_TAG, consoleMessage.message());
                     String url = consoleMessage.message().split(" : ")[1];
@@ -325,7 +337,7 @@ public class CastActivity extends Activity {
         webView.loadUrl("javascript:(function() { " +
                 "var itm = document.getElementsByTagName('audio')[0]; " +
                 "if(itm) { " +
-                    "itm.play(); " +
+//                    "itm.play(); " +
                     "console.log('play already'); " +
                     "console.log('audio : ' + itm.getAttribute('src'));" +
                     "itm.pause();" +
@@ -345,7 +357,18 @@ public class CastActivity extends Activity {
 //                    "xhr.send();"+
                 "} " +
             "})()");
-        webView.loadUrl("javascript:(function() { var itm = document.getElementsByTagName('video')[0]; if(itm) { itm.play(); console.log('play already'); } })()");
+
+        webView.loadUrl("javascript:(function() { " +
+                "var itm = document.getElementsByTagName('video')[0]; " +
+                "if(itm) { " +
+                    "itm.play(); " +
+                    "console.log('play already');" +
+                    "console.log('video : ' + itm.getAttribute('src'));" +
+                    "itm.pause();" +
+                    "var src = itm.src;" +
+                    "itm.volume = 0;" +
+                "} " +
+            "})()");
     }
 
     private void injectWebsocket(WebView webView) {

@@ -42,6 +42,7 @@ public class Installation {
                 sID.add(null);
         }
 
+        // TODO get the uuid provided by the upnp server instead
         if (uuid == null) {
             File installation = new File(context.getFilesDir(), INSTALLATION+id);
             try {
