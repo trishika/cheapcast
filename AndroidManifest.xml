@@ -47,7 +47,6 @@
         </receiver>
         <service android:name=".service.CheapCastService" android:process=":server" android:exported="true"/>
         <service android:name="org.droidupnp.model.cling.UpnpService" android:process=":server" android:exported="true"/>
-        <service android:name="at.maui.cheapcast.service.DownloadService" android:process=":server" android:exported="true"/>
     </application>
 
 </manifest>

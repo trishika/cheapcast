@@ -20,12 +20,12 @@ import at.maui.cheapcast.chromecast.model.Command;
 import at.maui.cheapcast.chromecast.model.ProtocolPayload;
 
 public class RampMessage extends Command implements ProtocolPayload {
+
     private int cmdId;
 
     public int getCmdId() {
         return cmdId;
     }
-
     public void setCmdId(int cmdId) {
         this.cmdId = cmdId;
     }

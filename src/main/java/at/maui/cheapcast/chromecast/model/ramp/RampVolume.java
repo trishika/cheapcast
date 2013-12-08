@@ -17,12 +17,16 @@
 package at.maui.cheapcast.chromecast.model.ramp;
 
 public class RampVolume extends RampMessage {
+
+    public RampVolume(){
+        this.setType("VOLUME");
+    }
+
     private double volume;
 
     public double getVolume() {
         return volume;
     }
-
     public void setVolume(double volume) {
         this.volume = volume;
     }

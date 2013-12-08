@@ -17,6 +17,7 @@
 package at.maui.cheapcast.json.deserializer;
 
 import at.maui.cheapcast.chromecast.model.ProtocolMessage;
+import at.maui.cheapcast.chromecast.model.cm.CmMessage;
 import at.maui.cheapcast.chromecast.model.ramp.RampMessage;
 import com.google.gson.*;
 import java.lang.reflect.Type;
@@ -33,9 +34,15 @@ public class ProtocolMessageDeserializer implements JsonDeserializer<ProtocolMes
             pm = new ProtocolMessage();
             pm.setProtocol(arr.get(0).getAsString());
 
-            if(pm.getProtocol().equals("ramp")) {
+            if(pm.getProtocol().equals("ramp"))
+            {
                 pm.setPayload((RampMessage)jsonDeserializationContext.deserialize(arr.get(1), RampMessage.class));
             }
+            else if(pm.getProtocol().equals("cm"))
+            {
+                pm.setPayload((CmMessage)jsonDeserializationContext.deserialize(arr.get(1), CmMessage.class));
+            }
+
             return pm;
         }
 

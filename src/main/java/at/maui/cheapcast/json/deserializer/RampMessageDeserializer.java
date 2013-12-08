@@ -16,14 +16,15 @@
 
 package at.maui.cheapcast.json.deserializer;
 
-import at.maui.cheapcast.chromecast.model.ramp.RampMessage;
-import at.maui.cheapcast.chromecast.model.ramp.RampResponse;
-import at.maui.cheapcast.chromecast.model.ramp.RampVolume;
+import android.util.Log;
+import at.maui.cheapcast.chromecast.model.ramp.*;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
 
 public class RampMessageDeserializer implements JsonDeserializer<RampMessage> {
+
+    public static final String LOG_TAG = "RampMessageDeserializer";
 
     @Override
     public RampMessage deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
@@ -34,9 +35,19 @@ public class RampMessageDeserializer implements JsonDeserializer<RampMessage> {
             if(t.equals("VOLUME")) {
                 return jsonDeserializationContext.deserialize(jsonElement, RampVolume.class);
             } else if(t.equals("STATUS") || t.equals("RESPONSE")) {
-                return jsonDeserializationContext.deserialize(jsonElement, RampResponse.class);
+                return jsonDeserializationContext.deserialize(jsonElement, RampStatus.class);
+            } else if(t.equals("PLAY")) {
+                return jsonDeserializationContext.deserialize(jsonElement, RampPlay.class);
+            } else if(t.equals("STOP")) {
+                return jsonDeserializationContext.deserialize(jsonElement, RampStop.class);
+            } else if(t.equals("LOAD")) {
+                return jsonDeserializationContext.deserialize(jsonElement, RampLoad.class);
+            } else if(t.equals("INFO")) {
+                return jsonDeserializationContext.deserialize(jsonElement, RampInfo.class);
             }
+            Log.w(LOG_TAG, "Ramp message not handle : " + t);
         }
+
         return null;
     }
 }

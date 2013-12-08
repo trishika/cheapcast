@@ -59,4 +59,7 @@ public interface IRendererCommand {
 	// / Full
 	public void updateFull();
 
+    // State
+    public ARendererState getRendererState();
+
 }

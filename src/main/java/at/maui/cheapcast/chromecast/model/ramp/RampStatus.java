@@ -16,92 +16,113 @@
 
 package at.maui.cheapcast.chromecast.model.ramp;
 
-public class RampResponse extends RampMessage {
+import at.maui.cheapcast.chromecast.model.State;
+
+public class RampStatus extends RampMessage {
+
+    public RampStatus(int seq, State state){
+        this.status = new Status(seq, state);
+        setStatusType();
+    }
+
+    private void setStatusType(){
+        this.setType("STATUS");
+    }
+
+    private void setResponseType(){
+        this.setType("RESPONSE");
+    }
+
+    @Override
+    public void setCmdId(int cmdId){
+        super.setCmdId(cmdId);
+        if(cmdId!=0)
+            setResponseType();
+        else
+            setStatusType();
+    }
+
     private Status status;
 
     public Status getStatus() {
         return status;
     }
-
     public void setStatus(Status status) {
         this.status = status;
     }
 
     public class Status {
+
+        public Status(int seq, State state){
+            this.state = state.getValue();
+            this.eventSequence = seq;
+        }
+
         private int eventSequence, state;
         private String contentId, title, imageUrl;
         private double duration, volume;
         private boolean muted, timeProgress;
 
-        private int getEventSequence() {
+        public int getEventSequence() {
             return eventSequence;
         }
-
-        private void setEventSequence(int eventSequence) {
+        public void setEventSequence(int eventSequence) {
             this.eventSequence = eventSequence;
         }
 
-        private int getState() {
+        public int getState() {
             return state;
         }
-
-        private void setState(int state) {
+        public void setState(int state) {
             this.state = state;
         }
 
-        private String getContentId() {
+        public String getContentId() {
             return contentId;
         }
-
-        private void setContentId(String contentId) {
+        public void setContentId(String contentId) {
             this.contentId = contentId;
         }
 
-        private String getTitle() {
+        public String getTitle() {
             return title;
         }
-
-        private void setTitle(String title) {
+        public void setTitle(String title) {
             this.title = title;
         }
 
-        private String getImageUrl() {
+        public String getImageUrl() {
             return imageUrl;
         }
-
-        private void setImageUrl(String imageUrl) {
+        public void setImageUrl(String imageUrl) {
             this.imageUrl = imageUrl;
         }
 
-        private double getDuration() {
+        public double getDuration() {
             return duration;
         }
-
-        private void setDuration(double duration) {
+        public void setDuration(double duration) {
             this.duration = duration;
         }
 
-        private double getVolume() {
+        public double getVolume() {
             return volume;
         }
-
-        private void setVolume(double volume) {
+        public void setVolume(double volume) {
             this.volume = volume;
         }
 
-        private boolean isMuted() {
+        public boolean isMuted() {
             return muted;
         }
-
-        private void setMuted(boolean muted) {
+        public void setMuted(boolean muted) {
             this.muted = muted;
         }
 
-        private boolean isTimeProgress() {
+        public boolean isTimeProgress() {
             return timeProgress;
         }
-
-        private void setTimeProgress(boolean timeProgress) {
+        public void setTimeProgress(boolean timeProgress) {
             this.timeProgress = timeProgress;
         }
     }

@@ -22,7 +22,7 @@ package org.droidupnp.controller.cling;
 import org.droidupnp.model.cling.CDevice;
 import org.droidupnp.model.cling.RendererState;
 import org.droidupnp.model.cling.TrackMetadata;
-import org.droidupnp.model.cling.didl.ClingDIDLItem;
+import org.droidupnp.model.upnp.ARendererState;
 import org.droidupnp.model.upnp.IRendererCommand;
 import org.droidupnp.model.upnp.IUpnpDevice;
 import org.droidupnp.model.upnp.didl.IDIDLItem;
@@ -39,24 +39,15 @@ import org.fourthline.cling.support.avtransport.callback.Play;
 import org.fourthline.cling.support.avtransport.callback.Seek;
 import org.fourthline.cling.support.avtransport.callback.SetAVTransportURI;
 import org.fourthline.cling.support.avtransport.callback.Stop;
-import org.fourthline.cling.support.model.DIDLObject;
 import org.fourthline.cling.support.model.MediaInfo;
 import org.fourthline.cling.support.model.PositionInfo;
 import org.fourthline.cling.support.model.TransportInfo;
-import org.fourthline.cling.support.model.item.AudioItem;
-import org.fourthline.cling.support.model.item.ImageItem;
-import org.fourthline.cling.support.model.item.Item;
-import org.fourthline.cling.support.model.item.PlaylistItem;
-import org.fourthline.cling.support.model.item.TextItem;
-import org.fourthline.cling.support.model.item.VideoItem;
 import org.fourthline.cling.support.renderingcontrol.callback.GetMute;
 import org.fourthline.cling.support.renderingcontrol.callback.GetVolume;
 import org.fourthline.cling.support.renderingcontrol.callback.SetMute;
 import org.fourthline.cling.support.renderingcontrol.callback.SetVolume;
 
 import android.util.Log;
-
-import at.maui.cheapcast.activity.PreferenceActivity;
 
 @SuppressWarnings("rawtypes")
 public class RendererCommand implements Runnable, IRendererCommand {
@@ -532,4 +523,10 @@ public class RendererCommand implements Runnable, IRendererCommand {
 		// TODO Auto-generated method stub
 
 	}
+
+    @Override
+    public ARendererState getRendererState()
+    {
+        return rendererState;
+    }
 }

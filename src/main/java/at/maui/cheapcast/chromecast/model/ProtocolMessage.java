@@ -23,7 +23,6 @@ public class ProtocolMessage {
     public String getProtocol() {
         return protocol;
     }
-
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
@@ -31,7 +30,6 @@ public class ProtocolMessage {
     public ProtocolPayload getPayload() {
         return payload;
     }
-
     public void setPayload(ProtocolPayload payload) {
         this.payload = payload;
     }

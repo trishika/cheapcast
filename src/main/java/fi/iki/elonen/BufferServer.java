@@ -13,7 +13,7 @@ public class BufferServer extends NanoHTTPD {
 
     public static final String LOG_TAG = "BufferServer";
 
-    private String mUri;
+    private String mUri = "";
     private String mime = "application/octet-stream";
 
     public BufferServer(String host, int port) {
@@ -44,9 +44,7 @@ public class BufferServer extends NanoHTTPD {
 
             URL url = new URL(mUri);
             URLConnection connection = url.openConnection();
-//            connection.connect();
             long fileLen = connection.getContentLength();
-//            InputStream input = url.openStream();
             InputStream input = new BufferedInputStream(connection.getInputStream());
 
             Log.i(LOG_TAG, "Connected to remote server, file is size " + fileLen);

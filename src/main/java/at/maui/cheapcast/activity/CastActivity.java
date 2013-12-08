@@ -27,18 +27,10 @@ import android.view.*;
 import android.webkit.*;
 
 import org.droidupnp.controller.cling.ServiceController;
-import org.droidupnp.model.cling.UpnpRegistry;
-import org.droidupnp.model.upnp.ARendererState;
-import org.droidupnp.model.upnp.IRegistryListener;
 import org.droidupnp.model.upnp.IRendererCommand;
-import org.droidupnp.model.upnp.IUpnpDevice;
-import org.droidupnp.model.upnp.RendererDiscovery;
-import org.droidupnp.model.upnp.didl.SimpleDIDLItem;
-import org.fourthline.cling.android.AndroidUpnpService;
 
 import at.maui.cheapcast.R;
 import at.maui.cheapcast.service.CheapCastService;
-import at.maui.cheapcast.service.DownloadService;
 import at.maui.cheapcast.service.ICheapCastCallback;
 import at.maui.cheapcast.service.ICheapCastService;
 import at.maui.cheapcast.ws.WebSocketFactory;
@@ -233,55 +225,11 @@ public class CastActivity extends Activity {
 
                     Context context  = mWebView.getContext();
 
-                    try {
-                        Log.i(LOG_TAG, "Setting upnp url " + url + " for device " + mUPnPID);
-                        mCheapCastService.setUpnpURL(mUPnPID, url);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-
-//                    Intent intent = new Intent(context, DownloadService.class);
-//                    intent.putExtra("url", url);
-////                    intent.putExtra("receiver", new DownloadReceiver(new Handler()));
-//                    startService(intent);
-
-//                    File filesDir = context.getFilesDir();
-//                    Log.d("FILE PATH", filesDir.getAbsolutePath());
-//                    if (filesDir.exists())
-//                    {
-//                        filesDir.setReadable(true, false);
-//                        try
-//                        {
-//                            byte[]           buffer;
-//                            int              length;
-//                            InputStream      inStream;
-//                            FileOutputStream outStream;
-//
-//                             Log.i(LOG_TAG, "Downloading file "+url);
-//                             inStream  = context.getAssets().open( url );
-//                             outStream = context.openFileOutput("file", Context.MODE_WORLD_READABLE);
-//                             buffer    = new byte[8192];
-//                             while ((length=inStream.read(buffer)) > 0)
-//                             {
-//                                 outStream.write(buffer, 0, length);
-//                             }
-//                             // Close the streams
-//                             inStream.close();
-//                             outStream.flush();
-//                             outStream.close();
-//                        }
-//                        catch (Exception e)
-//                        {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//
-//                    // Feedback
-//                    String[] fileList = mWebView.getContext().fileList();
-//                    Log.i("FILE LIST",  "--------------");
-//                    for (String fileName : fileList)
-//                    {
-//                        Log.i("- FILE", fileName);
+//                    try {
+//                        Log.i(LOG_TAG, "Setting upnp url " + url + " for device " + mUPnPID);
+//                        mUPnPID
+//                    } catch (RemoteException e) {
+//                        e.printStackTrace();
 //                    }
                 }
 
