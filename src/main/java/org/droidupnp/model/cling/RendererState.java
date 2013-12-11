@@ -20,6 +20,7 @@
 package org.droidupnp.model.cling;
 
 import org.droidupnp.model.upnp.ARendererState;
+import org.droidupnp.model.upnp.UPnPState;
 import org.fourthline.cling.support.model.MediaInfo;
 import org.fourthline.cling.support.model.PositionInfo;
 import org.fourthline.cling.support.model.TransportInfo;
@@ -35,7 +36,7 @@ public class RendererState extends ARendererState {
 	{
 		super();
 
-		state = State.STOP;
+		state = UPnPState.STOP;
 		volume = -1;
 		resetTrackInfo();
 
@@ -43,7 +44,7 @@ public class RendererState extends ARendererState {
 	}
 
 	// / Player info
-	private State state;
+	private UPnPState state;
 	private int volume;
 	private boolean mute;
 	private int repeatMode; // TODO enum with different mode
@@ -57,18 +58,18 @@ public class RendererState extends ARendererState {
 	// / Getter/Setter
 
 	@Override
-	public State getState()
+	public UPnPState getState()
 	{
 		return state;
 	}
 
 	@Override
-	public void setState(State state)
+	public void setState(UPnPState state)
 	{
 		if (this.state == state)
 			return;
 
-		if (state == State.STOP && (this.state == State.PLAY || this.state == State.PAUSE))
+		if (state == UPnPState.STOP && (this.state == UPnPState.PLAY || this.state == UPnPState.PAUSE))
 		{
 			// Stop !
 			resetTrackInfo();
@@ -155,12 +156,12 @@ public class RendererState extends ARendererState {
 
 		if (transportInfo.getCurrentTransportState() == TransportState.PAUSED_PLAYBACK
 				|| transportInfo.getCurrentTransportState() == TransportState.PAUSED_RECORDING)
-			setState(State.PAUSE);
+			setState(UPnPState.PAUSE);
 		else if (transportInfo.getCurrentTransportState() == TransportState.PLAYING)
-			setState(State.PLAY);
+			setState(UPnPState.PLAY);
 		else
 			// if(transportInfo.getCurrentTransportState() == TransportState.STOPPED)
-			setState(State.STOP);
+			setState(UPnPState.STOP);
 	}
 
 	private TrackMetadata getTrackMetadata()

@@ -25,6 +25,7 @@ import org.droidupnp.model.cling.TrackMetadata;
 import org.droidupnp.model.upnp.ARendererState;
 import org.droidupnp.model.upnp.IRendererCommand;
 import org.droidupnp.model.upnp.IUpnpDevice;
+import org.droidupnp.model.upnp.UPnPState;
 import org.droidupnp.model.upnp.didl.IDIDLItem;
 import org.fourthline.cling.controlpoint.ControlPoint;
 import org.fourthline.cling.model.action.ActionInvocation;
@@ -175,8 +176,8 @@ public class RendererCommand implements Runnable, IRendererCommand {
 	@Override
 	public void commandToggle()
 	{
-		RendererState.State state = rendererState.getState();
-		if (state == RendererState.State.PLAY)
+		UPnPState state = rendererState.getState();
+		if (state == UPnPState.PLAY)
 		{
 			commandPause();
 		}

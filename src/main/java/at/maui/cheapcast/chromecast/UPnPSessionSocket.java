@@ -12,6 +12,7 @@ import fi.iki.elonen.BufferServer;
 import fi.iki.elonen.ServerRunner;
 import org.droidupnp.model.upnp.ARendererState;
 import org.droidupnp.model.upnp.IRendererCommand;
+import org.droidupnp.model.upnp.UPnPState;
 import org.droidupnp.model.upnp.didl.SimpleDIDLItem;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -43,6 +44,20 @@ public class UPnPSessionSocket extends SessionSocket implements Observer {
         {
             ARendererState rendererState = (ARendererState) observable;
             Log.i(LOG_TAG, "Renderer state has changed");
+
+            RampStatus status = new RampStatus(eventSequence, State.IDLE);
+            status.setStatusType();
+
+            if(rendererState.getState() == UPnPState.PLAY)
+                status.getStatus().setState(State.PLAYING.getValue());
+            else if(rendererState.getState() == UPnPState.PAUSE)
+                status.getStatus().setState(State.STOPPED.getValue());
+
+            status.getStatus().setTitle(rendererState.getTitle());
+            status.getStatus().setDuration(rendererState.getDurationSeconds());
+            status.getStatus().setMuted(false);
+            status.getStatus().setTimeProgress(true);
+
         }
     }
 

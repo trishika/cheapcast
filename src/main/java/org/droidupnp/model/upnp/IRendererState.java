@@ -21,15 +21,9 @@ package org.droidupnp.model.upnp;
 
 public interface IRendererState {
 
-	// Play state
-	public enum State
-	{
-		PLAY, PAUSE, STOP
-	}
+	public UPnPState getState();
 
-	public State getState();
-
-	void setState(State state);
+	void setState(UPnPState state);
 
 	public int getVolume();
 

@@ -21,15 +21,15 @@ import at.maui.cheapcast.chromecast.model.State;
 public class RampStatus extends RampMessage {
 
     public RampStatus(int seq, State state){
-        this.status = new Status(seq, state);
+        this.status = new RampStatusInternal(seq, state);
         setStatusType();
     }
 
-    private void setStatusType(){
+    public void setStatusType(){
         this.setType("STATUS");
     }
 
-    private void setResponseType(){
+    public void setResponseType(){
         this.setType("RESPONSE");
     }
 
@@ -42,88 +42,14 @@ public class RampStatus extends RampMessage {
             setStatusType();
     }
 
-    private Status status;
+    private RampStatusInternal status;
 
-    public Status getStatus() {
+    public RampStatusInternal getStatus() {
         return status;
     }
-    public void setStatus(Status status) {
+    public void setStatus(RampStatusInternal status) {
         this.status = status;
     }
 
-    public class Status {
 
-        public Status(int seq, State state){
-            this.state = state.getValue();
-            this.eventSequence = seq;
-        }
-
-        private int eventSequence, state;
-        private String contentId, title, imageUrl;
-        private double duration, volume;
-        private boolean muted, timeProgress;
-
-        public int getEventSequence() {
-            return eventSequence;
-        }
-        public void setEventSequence(int eventSequence) {
-            this.eventSequence = eventSequence;
-        }
-
-        public int getState() {
-            return state;
-        }
-        public void setState(int state) {
-            this.state = state;
-        }
-
-        public String getContentId() {
-            return contentId;
-        }
-        public void setContentId(String contentId) {
-            this.contentId = contentId;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public String getImageUrl() {
-            return imageUrl;
-        }
-        public void setImageUrl(String imageUrl) {
-            this.imageUrl = imageUrl;
-        }
-
-        public double getDuration() {
-            return duration;
-        }
-        public void setDuration(double duration) {
-            this.duration = duration;
-        }
-
-        public double getVolume() {
-            return volume;
-        }
-        public void setVolume(double volume) {
-            this.volume = volume;
-        }
-
-        public boolean isMuted() {
-            return muted;
-        }
-        public void setMuted(boolean muted) {
-            this.muted = muted;
-        }
-
-        public boolean isTimeProgress() {
-            return timeProgress;
-        }
-        public void setTimeProgress(boolean timeProgress) {
-            this.timeProgress = timeProgress;
-        }
-    }
 }

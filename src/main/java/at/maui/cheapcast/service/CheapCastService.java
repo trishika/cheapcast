@@ -341,7 +341,7 @@ public class CheapCastService extends Service implements IDeviceDiscoveryObserve
                 }
                 else
                 {
-                    IUpnpDevice device = mUpnpDevices.get(mPort-START_PORT);
+                    IUpnpDevice device = mUpnpDevices.get(mPort-START_PORT-1);
                     ARendererState rs = PreferenceActivity.factory.createRendererState();
                     IRendererCommand deviceCommand = PreferenceActivity.factory.createRendererCommand(
                             mServiceController, device, rs);
