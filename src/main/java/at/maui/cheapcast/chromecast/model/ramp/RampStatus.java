@@ -51,5 +51,4 @@ public class RampStatus extends RampMessage {
         this.status = status;
     }
 
-
 }

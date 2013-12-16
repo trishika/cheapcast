@@ -35,17 +35,24 @@ public class UPnPSessionSocket extends SessionSocket implements Observer {
 
     private BufferServer bfServer;
 
+    private String contentId = null;
+    private String title = null;
+    private String imageUrl = null;
+    private RampContentInfo rampContentInfo = null;
+
+
     @Override
     public void update(Observable observable, Object o)
     {
         // UPnP device status update
+        Log.i(LOG_TAG, "Status update !!!");
 
         if(observable instanceof ARendererState)
         {
             ARendererState rendererState = (ARendererState) observable;
             Log.i(LOG_TAG, "Renderer state has changed");
 
-            RampStatus status = new RampStatus(eventSequence, State.IDLE);
+            RampStatus status = new RampStatus(eventSequence++, State.IDLE);
             status.setStatusType();
 
             if(rendererState.getState() == UPnPState.PLAY)
@@ -53,11 +60,27 @@ public class UPnPSessionSocket extends SessionSocket implements Observer {
             else if(rendererState.getState() == UPnPState.PAUSE)
                 status.getStatus().setState(State.STOPPED.getValue());
 
-            status.getStatus().setTitle(rendererState.getTitle());
+//            status.getStatus().setTitle(rendererState.getTitle());
+            status.getStatus().setCurrentTime(rendererState.getElapsedPercent()*rendererState.getDurationSeconds()/100);
             status.getStatus().setDuration(rendererState.getDurationSeconds());
             status.getStatus().setMuted(false);
             status.getStatus().setTimeProgress(true);
+            status.getStatus().setContentId(contentId);
+            status.getStatus().setVolume(1);
+            if(title!=null)
+                status.getStatus().setTitle(title);
+            if(rampContentInfo!=null)
+                status.getStatus().setContentInfo(rampContentInfo);
+            if(imageUrl!=null)
+                status.getStatus().setImageUrl(imageUrl);
 
+            Log.i(LOG_TAG, "Will send ramp status message !");
+            try {
+                sendRamp(status, RampStatus.class);
+            } catch (IOException ioe) {
+                Log.e(LOG_TAG, "Unable to send ramp status message");
+                ioe.printStackTrace();
+            }
         }
     }
 
@@ -69,6 +92,8 @@ public class UPnPSessionSocket extends SessionSocket implements Observer {
                     while(true)
                     {
                         sendCM(new CmPing(), CmPing.class);
+                        if(mRendererCommand!=null)
+                            mRendererCommand.updateFull();
                         sleep(2000);
                     }
                 } catch (IOException e) {
@@ -95,7 +120,6 @@ public class UPnPSessionSocket extends SessionSocket implements Observer {
         public void run(){
             try
             {
-                String location = null;
                 {
                     String uri = mURL.replace("android.clients", "jmt17") + "&output=json";
                     Log.i(LOG_TAG, "URI : " + uri);
@@ -117,7 +141,7 @@ public class UPnPSessionSocket extends SessionSocket implements Observer {
                         Log.i(LOG_TAG, "Json file content : " + json_url);
 
                         LocationFile locationFile = mGson.fromJson(json_url, LocationFile.class);
-                        location = locationFile.getLocation();
+                        contentId = locationFile.getLocation();
 
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
@@ -129,11 +153,11 @@ public class UPnPSessionSocket extends SessionSocket implements Observer {
                     Log.i(LOG_TAG, "File downloaded !!!");
                 }
 
-//                bfServer.setUri(location);
+//                bfServer.setUri(contentId);
 //                String ip = Utils.getLocalV4Address(Utils.getActiveNetworkInterface()).getHostAddress();
 //                mRendererCommand.launchItem(new SimpleDIDLItem("http://"+ip+":"+(START_PORT_MEDIA+id)+"/audio.mp3"));
 
-                mRendererCommand.launchItem(new SimpleDIDLItem(location));
+                mRendererCommand.launchItem(new SimpleDIDLItem(contentId));
 
 //                mCheapCastService.setUpnpURL(mUPnPID, url);
 
@@ -266,6 +290,10 @@ public class UPnPSessionSocket extends SessionSocket implements Observer {
                     Log.i(LOG_TAG, "Ramp response : " + load.getSrc() + " " + load.getContentInfo().getHttpHeaders().getAuthorization());
 
                     Log.e(LOG_TAG, "wget --header='Authorization: "+load.getContentInfo().getHttpHeaders().getAuthorization()+"' \""+load.getSrc()+"\"");
+
+                    title = load.getTitle();
+                    rampContentInfo = load.getContentInfo();
+                    imageUrl = load.getImageURL();
 
                     MediaDownloader mediaDownloader = new MediaDownloader( load.getSrc(), load.getContentInfo().getHttpHeaders().getAuthorization());
                     mediaDownloader.start();

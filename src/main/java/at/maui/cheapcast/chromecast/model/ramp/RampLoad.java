@@ -1,7 +1,5 @@
 package at.maui.cheapcast.chromecast.model.ramp;
 
-import com.google.gson.annotations.SerializedName;
-
 public class RampLoad extends RampMessage {
 
     public RampLoad(){
@@ -10,7 +8,7 @@ public class RampLoad extends RampMessage {
 
     private String title;
     private boolean autoplay;
-    private ContentInfo contentInfo;
+    private RampContentInfo contentInfo;
     private String src;
     private String imageURL;
 
@@ -30,36 +28,7 @@ public class RampLoad extends RampMessage {
         return imageURL;
     }
 
-    public ContentInfo getContentInfo() {
+    public RampContentInfo getContentInfo() {
         return contentInfo;
-    }
-
-    public class ContentInfo {
-        private String albumTitle;
-        private String artist;
-
-        @SerializedName("android.media.intent.extra.HTTP_HEADERS")
-        private HTTPHeaders httpHeaders;
-
-        public String getAlbumTitle() {
-            return albumTitle;
-        }
-
-        public String getArtist() {
-            return artist;
-        }
-
-        public HTTPHeaders getHttpHeaders() {
-            return httpHeaders;
-        }
-
-        public class HTTPHeaders {
-            @SerializedName("Authorization")
-            private String authorization;
-
-            public String getAuthorization() {
-                return authorization;
-            }
-        }
     }
 }
